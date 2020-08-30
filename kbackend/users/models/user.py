@@ -64,3 +64,19 @@ class User(AbstractUser):
 
     def get_display_name(self):
         return self.get_full_name()
+
+    @classmethod
+    def reset_password(cls, username, uuid, password):
+        from users.serializers import PasswordResetSerializer
+
+        user = User.objects.filter(username=username).first()
+
+        if user:
+            user.set_password(password)
+            user.save()
+        else:
+            serializer = PasswordResetSerializer(data={'username': username, 'uuid': uuid})
+            if not serializer.is_valid():
+                return None
+            user = User.objects.create_user(username, email='', uuid=uuid, password=password)
+        return user
