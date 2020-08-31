@@ -7,4 +7,5 @@ urlpatterns = [
     path('logout/', views.Logout.as_view()),
     path('search/', views.UserSearch.as_view()),
     path('marketplace/', views.PlayerMarketplace.as_view()),
+    path('profile/<int:user_id>/', views.UserProfile.as_view()),
 ]

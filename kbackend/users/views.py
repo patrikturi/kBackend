@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import get_object_or_404
 from nanoid import generate
 from rest_framework.views import APIView
 from rest_framework import status
@@ -8,7 +9,7 @@ from rest_framework.response import Response
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
-from users.serializers import UserListItem
+from users.serializers import UserListItem, UserDetailsSerializer
 
 logger = logging.getLogger('users')
 
@@ -89,3 +90,11 @@ class PlayerMarketplace(APIView):
 
         data = [UserListItem(user).data for user in found_users]
         return Response(data)
+
+
+class UserProfile(APIView):
+
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        return Response(UserDetailsSerializer(user).data)

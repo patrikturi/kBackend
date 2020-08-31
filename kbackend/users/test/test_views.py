@@ -146,5 +146,22 @@ class PlayerMarketplaceTestCase(TestCase):
         self.assertEqual(set(['john.smith', 'newplayer']), set(usernames))
 
 
+class UserProfileTestCase(TestCase):
+
+    def test_success(self):
+        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
+        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+
+        response = self.client.get('/api/v1/users/profile/2/')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_not_found(self):
+        response = self.client.get('/api/v1/users/profile/111/')
+
+        self.assertEqual(404, response.status_code)
+
+
 def random_uuid():
     return '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'
