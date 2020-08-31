@@ -102,5 +102,33 @@ class LoginTestCase(TestCase):
         self.assertIsNone(response.cookies.get('sessionid'))
 
 
+class UserSearchTestCase(TestCase):
+
+    def test_success(self):
+        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
+        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+
+        response = self.client.get('/api/v1/users/search/?username=bob')
+
+        self.assertEqual(200, response.status_code)
+
+        usernames = [user['username'] for user in response.data]
+        self.assertEqual(set(['bobby.marley', 'big.bobman']), set(usernames))
+
+    def test_with_no_results(self):
+        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcd')
+
+        response = self.client.get('/api/v1/users/search/?username=bob')
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([], response.data)
+
+    def test_with_too_short_username(self):
+        response = self.client.get('/api/v1/users/search/?username=b')
+
+        self.assertEqual(400, response.status_code)
+
+
 def random_uuid():
     return '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'

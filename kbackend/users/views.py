@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
+from users.serializers import UserListItem
 
 logger = logging.getLogger('users')
 
@@ -60,3 +61,22 @@ class Logout(APIView):
             logger.info({'event': 'logout', 'username': user.username})
         logout(request)
         return Response()
+
+
+class UserSearch(APIView):
+
+    def get(self, request):
+        username = request.GET.get('username', '').lower()
+        if len(username) < 3:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        found_users = User.objects.filter(username__contains=username).all().order_by('username')[:100]
+
+        user_username = request.user.username if request.user else ''
+        logger.info({'event': 'user_search',
+                     'username': user_username,
+                     'username_param': username,
+                     'result_count': len(found_users)})
+
+        data = [UserListItem(user).data for user in found_users]
+        return Response(data)
