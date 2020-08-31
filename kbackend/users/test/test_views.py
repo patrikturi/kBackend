@@ -130,5 +130,21 @@ class UserSearchTestCase(TestCase):
         self.assertEqual(400, response.status_code)
 
 
+class PlayerMarketplaceTestCase(TestCase):
+
+    def test_success(self):
+        User.objects.create_user('bobby.marley', available_for_transfer=False, uuid=random_uuid(), password='abcd')
+        User.objects.create_user('john.smith', available_for_transfer=True, uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('big.bobman', available_for_transfer=False, uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('newplayer', available_for_transfer=True, uuid=random_uuid(), password='abcdef')
+
+        response = self.client.get('/api/v1/users/marketplace/')
+
+        self.assertEqual(200, response.status_code)
+
+        usernames = [user['username'] for user in response.data]
+        self.assertEqual(set(['john.smith', 'newplayer']), set(usernames))
+
+
 def random_uuid():
     return '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'

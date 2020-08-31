@@ -80,3 +80,12 @@ class UserSearch(APIView):
 
         data = [UserListItem(user).data for user in found_users]
         return Response(data)
+
+
+class PlayerMarketplace(APIView):
+
+    def get(self, request):
+        found_users = User.objects.filter(available_for_transfer=True).all().order_by('username')[:100]
+
+        data = [UserListItem(user).data for user in found_users]
+        return Response(data)
