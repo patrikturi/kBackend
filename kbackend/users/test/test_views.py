@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import patch, Mock
 
 from django.conf import settings
@@ -6,6 +7,8 @@ from django.test import Client, TestCase
 from base64 import b64encode
 
 from users.models import User
+
+logging.disable(logging.CRITICAL)
 
 
 class PasswordResetTestCase(TestCase):

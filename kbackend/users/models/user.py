@@ -71,12 +71,13 @@ class User(AbstractUser):
 
         user = User.objects.filter(username=username).first()
 
+        is_new = user is None
         if user:
             user.set_password(password)
             user.save()
         else:
             serializer = PasswordResetSerializer(data={'username': username, 'uuid': uuid})
             if not serializer.is_valid():
-                return None
+                return None, False
             user = User.objects.create_user(username, email='', uuid=uuid, password=password)
-        return user
+        return user, is_new
