@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -133,3 +134,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ]
 }
+
+import logging.config
+log_dir = BASE_DIR / '..' / 'logs'
+if not os.path.isdir(log_dir):
+    os.mkdir(log_dir)
+logging.config.fileConfig(BASE_DIR / 'logging.conf')
