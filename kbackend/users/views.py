@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login, logout
 from nanoid import generate
 from rest_framework.views import APIView
 from rest_framework import status
@@ -22,3 +23,23 @@ class PasswordReset(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'pass': new_password})
+
+
+class Login(APIView):
+
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        login(request, user)
+        return Response()
+
+
+class Logout(APIView):
+
+    def post(self, request):
+        logout(request)
+        return Response()

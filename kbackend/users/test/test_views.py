@@ -1,7 +1,7 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from django.conf import settings
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.test import Client, TestCase
 from base64 import b64encode
 
@@ -12,7 +12,6 @@ class PasswordResetTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
-        self.client = Client()
         self.dummy_auth = 'basic some-token'
 
     @patch('users.views.get_basic_auth_username')
@@ -75,6 +74,29 @@ class PasswordResetTestCase(TestCase):
 
         user = authenticate(username='john.smith', password=response.data['pass'])
         self.assertIsNotNone(user)
+
+
+class LoginTestCase(TestCase):
+
+    def test_success(self):
+        username = 'bobby.marley'
+        password = 'Thepassword123'
+        User.objects.create_user(username, uuid=random_uuid(), password=password)
+
+        response = self.client.post('/api/v1/users/login/', {'username': username, 'password': password})
+
+        self.assertEqual(200, response.status_code)
+        self.assertIsNotNone(response.cookies.get('sessionid'))
+
+    def test_with_wrong_password(self):
+        username = 'bobby.marley'
+        password = 'Thepassword123'
+        User.objects.create_user(username, uuid=random_uuid(), password=password)
+
+        response = self.client.post('/api/v1/users/login/', {'username': username, 'password': 'The-wrong-password'})
+
+        self.assertEqual(401, response.status_code)
+        self.assertIsNone(response.cookies.get('sessionid'))
 
 
 def random_uuid():
