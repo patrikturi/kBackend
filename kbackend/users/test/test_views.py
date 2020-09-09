@@ -2,7 +2,7 @@ import logging
 from unittest.mock import patch, Mock
 
 from django.conf import settings
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
 from django.test import Client, TestCase
 from base64 import b64encode
 
@@ -146,7 +146,7 @@ class PlayerMarketplaceTestCase(TestCase):
         self.assertEqual(set(['john.smith', 'newplayer']), set(usernames))
 
 
-class UserProfileTestCase(TestCase):
+class GetUserProfileTestCase(TestCase):
 
     def test_success(self):
         User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
@@ -162,6 +162,28 @@ class UserProfileTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
+
+class PatchUserProfileTestCase(TestCase):
+    def setUp(self):
+        super().setUp();
+        self.user1 = User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
+        self.user2 = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+
+    def test_success(self):
+        self.client.force_login(self.user1)
+
+        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+
+        self.assertEqual(200, response.status_code)
+        self.user1.refresh_from_db()
+        self.assertEqual("Hi, I'm Bob!", self.user1.introduction)
+
+    def test_with_different_user(self):
+        self.client.force_login(self.user2)
+
+        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+
+        self.assertEqual(403, response.status_code)
 
 def random_uuid():
     return '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'

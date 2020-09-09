@@ -18,6 +18,7 @@ class UserListItem(serializers.ModelSerializer):
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+    updated_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = UserDetails
@@ -29,6 +30,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'profile_picture_url', 'introduction',
+        fields = ('id', 'username', 'profile_picture_url', 'introduction', 'user_details',
         'ksoccer_points', 'goals', 'assists', 'matches', 'available_for_transfer',
         'date_joined')
+
+
+class UserProfileEditSerializer(serializers.ModelSerializer):
+    user_details = UserDetailsSerializer()
+
+    class Meta:
+        model = User
+        fields = ('id', 'introduction', 'user_details', 'available_for_transfer',)

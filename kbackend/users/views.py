@@ -1,7 +1,9 @@
 import logging
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from nanoid import generate
 from rest_framework.views import APIView
 from rest_framework import status
@@ -9,7 +11,7 @@ from rest_framework.response import Response
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
-from users.serializers import UserListItem, UserDetailsSerializer
+from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer
 
 logger = logging.getLogger('users')
 
@@ -41,6 +43,8 @@ class PasswordReset(APIView):
 class Login(APIView):
 
     def post(self, request):
+        if request.user.is_authenticated:
+            return Response()
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
@@ -97,4 +101,17 @@ class UserProfile(APIView):
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
 
-        return Response(UserDetailsSerializer(user).data)
+        return Response(UserProfileSerializer(user).data)
+
+    @method_decorator(login_required)
+    def patch(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+        if request.user.id != user_id and not request.user.is_superuser:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = UserProfileEditSerializer(user, request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response()
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
