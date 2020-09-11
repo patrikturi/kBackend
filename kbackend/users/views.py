@@ -62,7 +62,7 @@ class Login(APIView):
 class Logout(APIView):
 
     def get(self, request):
-        if request.user:
+        if request.user.is_authenticated:
             logger.info({'event': 'logout', 'username': user.username})
         logout(request)
         return Response()
