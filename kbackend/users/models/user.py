@@ -26,7 +26,7 @@ class User(AbstractUser):
     uuid_validator = RegexValidator(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 
     uuid = models.CharField(max_length=36, help_text='SL uuid: string of 32 hex characters with four dashes interspersed',
-                            validators=[uuid_validator])
+                            validators=[uuid_validator], blank=True)
 
     is_test = models.BooleanField(default=False)
 
@@ -75,6 +75,10 @@ class User(AbstractUser):
 
         is_new = user is None
         if user:
+            if user.uuid and user.uuid != uuid:
+                return None, False
+            user.is_active = True
+            user.uuid = uuid
             user.set_password(password)
             user.save()
         else:
@@ -83,3 +87,14 @@ class User(AbstractUser):
                 return None, False
             user = User.objects.create_user(username, email='', uuid=uuid, password=password)
         return user, is_new
+
+    @classmethod
+    def get_or_create(self, username):
+        user = User.objects.filter(username=username).first()
+
+        if not user:
+            # Create non-registered user
+            user = User.objects.create_user(username, is_active=False)
+            user.set_unusable_password()
+            user.save()
+        return user

@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.test import Client, TestCase
+from django.test import TestCase
 from base64 import b64encode
 
 from users.models import User
