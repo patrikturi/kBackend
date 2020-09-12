@@ -22,6 +22,28 @@ class User(AbstractUser):
         },
     )
 
+    # http://wiki.secondlife.com/wiki/UUID
+    uuid_validator = RegexValidator(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
+
+    uuid = models.CharField(max_length=36, help_text='SL uuid: string of 32 hex characters with four dashes interspersed',
+                            validators=[uuid_validator])
+
+    is_test = models.BooleanField(default=False)
+
+    introduction = models.CharField(max_length=255, blank=True)
+
+    available_for_transfer = models.BooleanField(default=False)
+
+    ksoccer_points = models.IntegerField(default=0)
+    goals = models.IntegerField(default=0)
+    assists = models.IntegerField(default=0)
+    matches = models.IntegerField(default=0)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Required for admin users
+    REQUIRED_FIELDS = ['email', 'uuid']
+
     # Remove these Django fields and derive them from the SL username
     first_name = None
     last_name = None
@@ -37,30 +59,10 @@ class User(AbstractUser):
             return 'Resident'
         return username_parts[1].capitalize()
 
-    # http://wiki.secondlife.com/wiki/UUID
-    uuid_validator = RegexValidator(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
-
-    uuid = models.CharField(max_length=36, help_text='SL uuid: string of 32 hex characters with four dashes interspersed',
-                            validators=[uuid_validator])
-
     @property
     def profile_picture_url(self):
         # For start this will do, later users could upload their own
         return f'https://my-secondlife-agni.akamaized.net/users/{self.username}/sl_image.png'
-
-    introduction = models.CharField(max_length=255, blank=True)
-
-    available_for_transfer = models.BooleanField(default=False)
-
-    ksoccer_points = models.IntegerField(default=0)
-    goals = models.IntegerField(default=0)
-    assists = models.IntegerField(default=0)
-    matches = models.IntegerField(default=0)
-
-    updated_at = models.DateTimeField(auto_now=True)
-
-    # Required for admin users
-    REQUIRED_FIELDS = ['email', 'uuid']
 
     def get_display_name(self):
         return self.get_full_name()
