@@ -1,0 +1,4 @@
+-r requirements-common.txt
+
+gunicorn~=20.0.4
+whitenoise~=5.2.0

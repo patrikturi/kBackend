@@ -1,0 +1,4 @@
+-r requirements-common.txt
+
+flake8~=3.8.3
+rope~=0.17.0

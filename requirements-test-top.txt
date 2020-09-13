@@ -1,4 +1,0 @@
--r requirements-top.txt
-
-pycodestyle~=2.6.0
-rope~=0.17.0
