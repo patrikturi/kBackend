@@ -4,6 +4,7 @@ from base64 import b64encode
 from django.test import TestCase
 from users.models import User
 
+
 class SoccerStatsTestCase(TestCase):
 
     def test_invalid_token(self):

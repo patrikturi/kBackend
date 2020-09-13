@@ -8,4 +8,5 @@ urlpatterns = [
     path('search/', views.UserSearch.as_view()),
     path('marketplace/', views.PlayerMarketplace.as_view()),
     path('profile/<int:user_id>/', views.UserProfile.as_view()),
+    path('test-users/', views.TestUsers.as_view()),
 ]

@@ -1,12 +1,14 @@
+import json
 import logging
+import rest_framework.response
 from unittest.mock import patch, Mock
 
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.test import TestCase
-from base64 import b64encode
 
 from users.models import User
+from users.test.testhelpers import ViewTestCase
 
 logging.disable(logging.CRITICAL)
 
@@ -165,7 +167,7 @@ class GetUserProfileTestCase(TestCase):
 
 class PatchUserProfileTestCase(TestCase):
     def setUp(self):
-        super().setUp();
+        super().setUp()
         self.user1 = User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
         self.user2 = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
 
@@ -184,6 +186,39 @@ class PatchUserProfileTestCase(TestCase):
         response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
 
         self.assertEqual(403, response.status_code)
+
+
+class CreateTestUserTestCase(ViewTestCase):
+
+    def test_invalid_auth(self):
+        response = self.client.post('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.invalid_auth)
+
+        self.assertEqual(401, response.status_code)
+
+    def test_success(self):
+        response = self.client.post('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.valid_auth)
+
+        self.assertEqual(200, response.status_code)
+        response_data = json.loads(response.content)
+        self.assertTrue('test' in response_data['username'])
+
+
+class GetTestUsersTestCase(ViewTestCase):
+
+    def test_invalid_auth(self):
+        response = self.client.get('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.invalid_auth)
+
+        self.assertEqual(401, response.status_code)
+
+    def test_success(self):
+        User.objects.create(username='test-1', is_test=True)
+
+        response = self.client.get('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.valid_auth)
+
+        self.assertEqual(200, response.status_code)
+        response_data = json.loads(response.content)
+        self.assertEqual('test-1', response_data[0]['username'])
+
 
 def random_uuid():
     return '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'

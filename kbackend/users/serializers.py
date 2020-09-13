@@ -7,7 +7,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'uuid') # TODO: contain at most one . and uuid 36 length
+        fields = ('username', 'uuid')
 
 
 class UserListItem(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'profile_picture_url', 'introduction', 'user_details',
-        'ksoccer_points', 'goals', 'assists', 'matches', 'available_for_transfer',
+        'kcoins', 'goals', 'assists', 'available_for_transfer',
         'date_joined')
 
 

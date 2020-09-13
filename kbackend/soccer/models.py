@@ -24,6 +24,13 @@ class Match(models.Model):
     away_team = models.CharField(max_length=40)
 
 
+class MatchParticipation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    match = models.ForeignKey(Match, null=True, on_delete=models.CASCADE)
+    side = models.CharField(max_length=4, blank=True, choices=MATCH_SIDES)
+
+
 class SoccerStat(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     stat_uuid = models.CharField(max_length=36, db_index=True)
@@ -32,5 +39,5 @@ class SoccerStat(models.Model):
 
     stat_type = models.CharField(max_length=10, choices=SOCCER_STAT_TYPES)
     value = models.IntegerField()
-    match = models.ForeignKey(Match, null=True, on_delete=models.SET_NULL)
+    match = models.ForeignKey(Match, null=True, on_delete=models.CASCADE)
     side = models.CharField(max_length=4, blank=True, choices=MATCH_SIDES)

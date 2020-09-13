@@ -4,14 +4,15 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from nanoid import generate
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
 from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer
+from users.helpers import get_test_users
 
 logger = logging.getLogger('users')
 
@@ -24,7 +25,7 @@ class PasswordReset(APIView):
         if not get_basic_auth_username(auth_header):
             return basic_auth_denied()
 
-        new_password = generate(size=20)
+        new_password = nanoid.generate(size=20)
         username = request.data.get('username')
         uuid = request.data.get('uuid')
         user, is_created = User.reset_password(username, uuid, new_password)
@@ -115,3 +116,29 @@ class UserProfile(APIView):
             return Response()
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class TestUsers(APIView):
+
+    def get(self, request):
+        auth_header = request.headers.get('Authorization')
+
+        if not get_basic_auth_username(auth_header):
+            return basic_auth_denied()
+
+        test_users = get_test_users()
+
+        data = [{'username': user.username} for user in test_users]
+        return Response(data)
+
+    def post(self, request):
+        auth_header = request.headers.get('Authorization')
+
+        if not get_basic_auth_username(auth_header):
+            return basic_auth_denied()
+
+        username = f'test-{nanoid.generate(size=4)}'
+
+        new_user = User.objects.create_user(username, is_test=True)
+
+        return Response(data={'username': username})

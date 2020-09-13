@@ -23,7 +23,7 @@ class User(AbstractUser):
     )
 
     # http://wiki.secondlife.com/wiki/UUID
-    uuid_validator = RegexValidator(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
+    uuid_validator = RegexValidator(r'^[a-z0-9-]{36}$')
 
     uuid = models.CharField(max_length=36, help_text='SL uuid: string of 32 hex characters with four dashes interspersed',
                             validators=[uuid_validator], blank=True)
@@ -34,10 +34,9 @@ class User(AbstractUser):
 
     available_for_transfer = models.BooleanField(default=False)
 
-    ksoccer_points = models.IntegerField(default=0)
+    kcoins = models.IntegerField(default=0)
     goals = models.IntegerField(default=0)
     assists = models.IntegerField(default=0)
-    matches = models.IntegerField(default=0)
 
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -76,7 +75,7 @@ class User(AbstractUser):
             self.assists += value
             changed = True
         elif stat_type == 'kcoints':
-            self.ksoccer_points += value
+            self.kcoins += value
             changed = True
 
         if changed:

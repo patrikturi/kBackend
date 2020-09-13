@@ -1,5 +1,8 @@
 {
     "python.linting.enabled": true,
     "python.linting.pycodestyleEnabled": true,
-    "python.linting.pycodestyleArgs": ["--ignore=E501"]
+    "python.linting.pycodestyleArgs": [
+        "--ignore=E501"
+    ],
+    "files.trimTrailingWhitespace": true
 }

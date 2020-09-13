@@ -101,3 +101,4 @@ class CreateStatTestCase(TestCase):
         self.assertIsNotNone(stat)
         self.assertFalse(created)
         self.assertEqual(0, self.user.goals)
+
