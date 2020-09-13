@@ -6,6 +6,7 @@ services:
     command: ["/app_entrypoint.sh"]
     volumes:
       - /var/log/kbackend:/kbackend/core/logs
+      - /db:/kbackend/core/db
     ports:
       - "80:80"
     restart: always

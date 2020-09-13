@@ -120,3 +120,14 @@ if not os.path.isdir(log_dir):
 logging.config.fileConfig(BASE_DIR / 'logging.conf')
 
 LOGLEVEL = 'INFO'
+
+DB_PATH = BASE_DIR / 'core' / 'db'
+if not os.path.isdir(DB_PATH):
+    os.makedirs(DB_PATH)
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DB_PATH / 'db.sqlite3',
+    }
+}
