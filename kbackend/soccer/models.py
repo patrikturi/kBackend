@@ -26,11 +26,11 @@ class Match(models.Model):
 
 class SoccerStat(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    stat_uuid = models.CharField(max_length=36, db_index=True)
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     stat_type = models.CharField(max_length=10, choices=SOCCER_STAT_TYPES)
     value = models.IntegerField()
-    stat_uuid = models.CharField(max_length=36)
     match = models.ForeignKey(Match, null=True, on_delete=models.SET_NULL)
     side = models.CharField(max_length=4, blank=True, choices=MATCH_SIDES)

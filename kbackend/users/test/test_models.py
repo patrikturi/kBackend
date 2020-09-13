@@ -1,6 +1,7 @@
 from django.test import TestCase
 from users.models import User
 
+
 class GetOrCreateUserTestCase(TestCase):
 
     def test_get_existing(self):

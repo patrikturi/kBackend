@@ -89,7 +89,7 @@ class User(AbstractUser):
         return user, is_new
 
     @classmethod
-    def get_or_create(self, username):
+    def get_or_create(cls, username):
         user = User.objects.filter(username=username).first()
 
         if not user:
