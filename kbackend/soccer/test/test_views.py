@@ -1,28 +1,46 @@
+import json
 from unittest.mock import patch
-from base64 import b64encode
 
 from django.test import TestCase
 from users.models import User
+from users.test.testhelpers import ViewTestCase
 
 
-class SoccerStatsTestCase(TestCase):
+class SoccerStatsTestCase(ViewTestCase):
 
     def test_invalid_token(self):
         User.objects.create(username='user')
-        invalid_token = b64encode(b'debug:wrong-password').decode('ascii')
 
         valid_data = {'username': 'user', 'stat_uuid':'some-uuid', 'stat_type': 'goal', 'value': 1}
-        response = self.client.post('/api/v1/soccer/stats/',
-            valid_data, HTTP_AUTHORIZATION=f'basic {invalid_token}')
+        response = self.client.post('/api/v1/soccer/stats/', valid_data,
+                                    HTTP_AUTHORIZATION=self.invalid_auth)
 
         self.assertEqual(401, response.status_code)
 
     def test_success(self):
         User.objects.create(username='user')
-        valid_token = b64encode(b'debug:token').decode('ascii')
 
         valid_data = {'username': 'user', 'stat_uuid':'someuuid', 'stat_type': 'goal', 'value': 1}
-        response = self.client.post('/api/v1/soccer/stats/',
-            valid_data, HTTP_AUTHORIZATION=f'basic {valid_token}', content_type='application/json')
+        response = self.client.post('/api/v1/soccer/stats/', valid_data,
+                                    HTTP_AUTHORIZATION=self.valid_auth, content_type='application/json')
 
         self.assertEqual(201, response.status_code)
+
+
+class CreateMatchTestCase(ViewTestCase):
+
+    def test_invalid_auth(self):
+        valid_data = {'home_team': 'Team A', 'away_team': 'Team B', 'home_players': ['userA', 'userB'], 'away_players': ['userC', 'userD']}
+        response = self.client.post('/api/v1/soccer/matches/', valid_data,
+                                    HTTP_AUTHORIZATION=self.invalid_auth, content_type='application/json')
+
+        self.assertEqual(401, response.status_code)
+
+    def test_success(self):
+        valid_data = {'home_team': 'Team A', 'away_team': 'Team B', 'home_players': ['userA', 'userB'], 'away_players': ['userC', 'userD']}
+        response = self.client.post('/api/v1/soccer/matches/', valid_data,
+                                    HTTP_AUTHORIZATION=self.valid_auth, content_type='application/json')
+
+        self.assertEqual(201, response.status_code)
+        response_data = json.loads(response.content)
+        self.assertEqual(1, response_data['id'])

@@ -20,6 +20,8 @@ MATCH_SIDES = [
 class Match(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
+    competition_name = models.CharField(max_length=40, blank=True)
+
     home_team = models.CharField(max_length=40)
     away_team = models.CharField(max_length=40)
 

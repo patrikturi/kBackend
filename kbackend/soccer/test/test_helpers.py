@@ -3,9 +3,9 @@ from unittest.mock import patch, Mock
 from django.test import TestCase
 
 from soccer.helpers import create_stat
-from soccer.models import SoccerStat
+from soccer.models import SoccerStat, MatchParticipation
 from users.models import User
-from soccer.helpers import perform_create_stat
+from soccer.helpers import perform_create_stat, create_match_with_users
 
 
 class PerformCreateStatTestCase(TestCase):
@@ -102,3 +102,23 @@ class CreateStatTestCase(TestCase):
         self.assertFalse(created)
         self.assertEqual(0, self.user.goals)
 
+
+class CreateMatchTestCase(TestCase):
+
+    def test_create_success(self):
+        user1 = User.objects.create(username='user-1')
+        user2 = User.objects.create(username='user-2')
+        user3 = User.objects.create(username='user-3')
+        user4 = User.objects.create(username='user-4')
+
+        match = create_match_with_users('Mini League', 'Team A', 'Team B', [user1, user2], [user3, user4])
+
+        self.assertEqual(1, match.id)
+
+        part_home = MatchParticipation.objects.filter(match=match, side='home')
+        part_away = MatchParticipation.objects.filter(match=match, side='away')
+        home_names = [part.user.username for part in part_home]
+        away_names = [part.user.username for part in part_away]
+
+        self.assertEqual(['user-1', 'user-2'], home_names)
+        self.assertEqual(['user-3', 'user-4'], away_names)

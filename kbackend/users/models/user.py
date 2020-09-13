@@ -107,8 +107,24 @@ class User(AbstractUser):
         user = User.objects.filter(username=username).first()
 
         if not user:
-            # Create non-registered user
-            user = User.objects.create_user(username, is_active=False)
-            user.set_unusable_password()
-            user.save()
+            user = cls._create_non_registered(username)
+        return user
+
+    @classmethod
+    def bulk_get_or_create(cls, usernames):
+        users = list(User.objects.filter(username__in=usernames).all())
+        existing_usernames = [user.username for user in users]
+
+        missing_usernames = set(usernames) - set(existing_usernames)
+
+        for username in missing_usernames:
+            new_user = cls._create_non_registered(username)
+            users.append(new_user)
+        return users
+
+    @classmethod
+    def _create_non_registered(cls, username):
+        user = User.objects.create_user(username, is_active=False)
+        user.set_unusable_password()
+        user.save()
         return user

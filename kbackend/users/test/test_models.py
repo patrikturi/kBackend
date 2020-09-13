@@ -17,3 +17,29 @@ class GetOrCreateUserTestCase(TestCase):
 
         self.assertEqual('john.smith', user.username)
         self.assertFalse(user.is_active)
+
+
+class BulkGetOrCreateTestCase(TestCase):
+
+    def test_no_existing_user(self):
+        users = User.bulk_get_or_create(['userA', 'userB'])
+
+        usernames = [user.username for user in users]
+        self.assertEqual(set(['userA', 'userB']), set(usernames))
+
+    def test_all_users_exist(self):
+        User.objects.create(username='userA')
+        User.objects.create(username='userB')
+
+        users = User.bulk_get_or_create(['userA', 'userB'])
+
+        usernames = [user.username for user in users]
+        self.assertEqual(set(['userA', 'userB']), set(usernames))
+
+    def test_some_users_exist(self):
+        User.objects.create(username='userB')
+
+        users = User.bulk_get_or_create(['userA', 'userB', 'userC'])
+
+        usernames = [user.username for user in users]
+        self.assertEqual(set(['userA', 'userB', 'userC']), set(usernames))

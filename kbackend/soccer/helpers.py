@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from soccer.serializers import SoccerStatCreateSerializer
-from soccer.models import SoccerStat
+from soccer.models import SoccerStat, MatchParticipation, Match
 from users.models import User
 
 logger = logging.getLogger('soccer')
@@ -51,3 +51,15 @@ def create_stat(username, data):
     stat = serializer.save()
     user.add_stat(stat_type, value)
     return stat, True
+
+
+def create_match_with_users(competition_name, home_team_name, away_team_name, home_players, away_players):
+    match = Match.objects.create(competition_name=competition_name, home_team=home_team_name, away_team=away_team_name)
+
+    home_participations = [MatchParticipation(user=user, match=match, side='home') for user in home_players]
+    MatchParticipation.objects.bulk_create(home_participations)
+
+    away_participartions = [MatchParticipation(user=user, match=match, side='away') for user in away_players]
+    MatchParticipation.objects.bulk_create(away_participartions)
+
+    return match
