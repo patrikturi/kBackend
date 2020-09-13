@@ -25,6 +25,9 @@ class Match(models.Model):
     home_team = models.CharField(max_length=40)
     away_team = models.CharField(max_length=40)
 
+    class Meta:
+        verbose_name_plural = 'Matches'
+
 
 class MatchParticipation(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
