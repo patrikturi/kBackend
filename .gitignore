@@ -6,3 +6,4 @@ logs/
 .vscode/PythonImportHelper*
 .vscode/.ropeproject/objectdb
 kbackend/core/static/
+kbackend/core/logs/

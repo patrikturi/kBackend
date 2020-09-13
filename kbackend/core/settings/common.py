@@ -17,7 +17,7 @@ import logging.config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
-ALLOWED_HOSTS = ['localhost', '192.168.0.1', 'ksoccersl.com']
+ALLOWED_HOSTS = ['localhost', '192.168.0.1', 'backend.ksoccersl.com']
 
 
 # Application definition

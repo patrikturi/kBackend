@@ -1,9 +1,9 @@
 {
-    "python.venvPath": "virtualenv",
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
         "--ignore=E501"
     ],
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "python.pythonPath": "virtualenv/bin/python"
 }
