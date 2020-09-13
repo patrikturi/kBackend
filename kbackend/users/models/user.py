@@ -67,6 +67,21 @@ class User(AbstractUser):
     def get_display_name(self):
         return self.get_full_name()
 
+    def add_stat(self, stat_type, value):
+        changed = False
+        if stat_type == 'goal':
+            self.goals += value
+            changed = True
+        elif stat_type == 'assist':
+            self.assists += value
+            changed = True
+        elif stat_type == 'kcoints':
+            self.ksoccer_points += value
+            changed = True
+
+        if changed:
+            self.save()
+
     @classmethod
     def reset_password(cls, username, uuid, password):
         from users.serializers import PasswordResetSerializer

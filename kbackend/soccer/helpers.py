@@ -40,6 +40,8 @@ def create_stat(username, data):
         return None, False
 
     stat_uuid = data['stat_uuid']
+    stat_type = data['stat_type']
+    value = data['value']
 
     stat = SoccerStat.objects.filter(stat_uuid=stat_uuid).first()
     if stat:
@@ -47,4 +49,5 @@ def create_stat(username, data):
         return stat, False
 
     stat = serializer.save()
+    user.add_stat(stat_type, value)
     return stat, True

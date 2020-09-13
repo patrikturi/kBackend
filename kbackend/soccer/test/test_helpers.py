@@ -41,6 +41,7 @@ class PerformCreateStatTestCase(TestCase):
 
         self.assertEqual(200, response.status_code)
 
+
 class CreateStatTestCase(TestCase):
 
     def setUp(self):
@@ -86,6 +87,7 @@ class CreateStatTestCase(TestCase):
 
         self.assertIsNotNone(stat)
         self.assertTrue(created)
+        self.assertEqual(1, self.user.goals)
 
     @patch('soccer.helpers.User')
     def test_with_existing_stat(self, User_mock):
@@ -98,3 +100,4 @@ class CreateStatTestCase(TestCase):
 
         self.assertIsNotNone(stat)
         self.assertFalse(created)
+        self.assertEqual(0, self.user.goals)
