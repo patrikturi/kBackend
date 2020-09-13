@@ -114,7 +114,9 @@ REST_FRAMEWORK = {
     ]
 }
 
-log_dir = BASE_DIR / '..' / 'logs'
+log_dir = BASE_DIR / 'core' / 'logs'
 if not os.path.isdir(log_dir):
     os.mkdir(log_dir)
 logging.config.fileConfig(BASE_DIR / 'logging.conf')
+
+LOGLEVEL = 'INFO'

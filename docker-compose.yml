@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    command: ["/app_entrypoint.sh"]
+    volumes:
+      - /var/log/kbackend:/kbackend/core/logs
+    ports:
+      - "80:80"
+    restart: always
+    env_file:
+      - .env
