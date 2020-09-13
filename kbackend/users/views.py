@@ -64,7 +64,7 @@ class Logout(APIView):
 
     def get(self, request):
         if request.user.is_authenticated:
-            logger.info({'event': 'logout', 'username': user.username})
+            logger.info({'event': 'logout', 'username': request.user.username})
         logout(request)
         return Response()
 
@@ -141,4 +141,4 @@ class TestUsers(APIView):
 
         new_user = User.objects.create_user(username, is_test=True)
 
-        return Response(data={'username': username})
+        return Response(data={'username': new_user.username})
