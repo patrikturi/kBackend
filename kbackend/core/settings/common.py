@@ -105,6 +105,9 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = 'core/static'
 
+if not os.path.isdir(STATIC_ROOT):
+    os.makedirs(STATIC_ROOT)
+
 AUTH_USER_MODEL = 'users.User'
 
 

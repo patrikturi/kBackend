@@ -8,7 +8,7 @@ services:
       - /var/log/kbackend:/kbackend/core/logs
       - /db:/kbackend/core/db
     ports:
-      - "80:80"
+      - "443:443"
     restart: always
     env_file:
       - .env
