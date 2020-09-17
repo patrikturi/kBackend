@@ -17,7 +17,7 @@ import logging.config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
-ALLOWED_HOSTS = ['localhost', '192.168.0.1', '.ksoccersl.com', '18.234.178.208']
+ALLOWED_HOSTS = ['18.234.178.208', '.ksoccersl.com', 'localhost', '192.168.0.1']
 
 
 # Application definition
@@ -105,8 +105,8 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = 'core/static'
 
-if not os.path.isdir(STATIC_ROOT):
-    os.makedirs(STATIC_ROOT)
+
+os.makedirs(STATIC_ROOT, exist_ok=True)
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -117,16 +117,13 @@ REST_FRAMEWORK = {
     ]
 }
 
-log_dir = BASE_DIR / 'core' / 'logs'
-if not os.path.isdir(log_dir):
-    os.mkdir(log_dir)
+os.makedirs(BASE_DIR / 'core' / 'logs' / 'app', exist_ok=True)
 logging.config.fileConfig(BASE_DIR / 'logging.conf')
 
 LOGLEVEL = 'INFO'
 
 DB_PATH = BASE_DIR / 'core' / 'db'
-if not os.path.isdir(DB_PATH):
-    os.makedirs(DB_PATH)
+os.makedirs(DB_PATH, exist_ok=True)
 
 DATABASES = {
     'default': {

@@ -7,3 +7,6 @@ logs/
 .vscode/.ropeproject/objectdb
 kbackend/core/static/
 kbackend/core/logs/
+kbackend/server.crt
+kbackend/server.key
+kBackend.pem
