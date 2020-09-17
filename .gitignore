@@ -10,3 +10,4 @@ kbackend/core/logs/
 kbackend/server.crt
 kbackend/server.key
 kBackend.pem
+.env
