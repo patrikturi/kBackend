@@ -10,4 +10,4 @@ if [ $LOCAL_TEST ]; then
 else
     APP_PORT=443
 fi
-gunicorn core.wsgi --bind 0.0.0.0:$APP_PORT -w 3 --preload --certfile=server.crt --keyfile=server.key --access-logfile core/logs/gunicorn_access/access.log --error-logfile core/logs/gunicorn_error/error.log
+gunicorn core.wsgi --bind 0.0.0.0:$APP_PORT -w 2 --preload --certfile=server.crt --keyfile=server.key --access-logfile core/logs/gunicorn_access/access.log --error-logfile core/logs/gunicorn_error/error.log
