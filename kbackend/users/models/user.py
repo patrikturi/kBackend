@@ -82,7 +82,7 @@ class User(AbstractUser):
             self.save()
 
     @classmethod
-    def reset_password(cls, username, uuid, password):
+    def reset_password(cls, username, email, uuid, password):
         from users.serializers import PasswordResetSerializer
 
         user = User.objects.filter(username=username).first()
@@ -96,10 +96,10 @@ class User(AbstractUser):
             user.set_password(password)
             user.save()
         else:
-            serializer = PasswordResetSerializer(data={'username': username, 'uuid': uuid})
+            serializer = PasswordResetSerializer(data={'username': username, 'email': email, 'uuid': uuid})
             if not serializer.is_valid():
                 return None, False
-            user = User.objects.create_user(username, email='', uuid=uuid, password=password)
+            user = User.objects.create_user(username, email=email, uuid=uuid, password=password)
         return user, is_new
 
     @classmethod

@@ -27,8 +27,9 @@ class PasswordReset(APIView):
 
         new_password = nanoid.generate(size=20)
         username = request.data.get('username')
+        email = request.data.get('email', '')
         uuid = request.data.get('uuid')
-        user, is_created = User.reset_password(username, uuid, new_password)
+        user, is_created = User.reset_password(username, email, uuid, new_password)
         if not user:
             logger.info({'event': 'password_reset_failed', 'username': username, 'uuid': uuid})
             return Response(status=status.HTTP_400_BAD_REQUEST)
