@@ -59,9 +59,9 @@ class PasswordResetTestCase(TestCase):
             {'username': 'john.smith', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(200, response.status_code)
-        self.assertTrue('pass' in response.data)
+        self.assertTrue('password' in response.data)
 
-        user = authenticate(username='john.smith', password=response.data['pass'])
+        user = authenticate(username='john.smith', password=response.data['password'])
         self.assertIsNotNone(user)
 
     @patch('users.views.get_basic_auth_username')
@@ -74,10 +74,10 @@ class PasswordResetTestCase(TestCase):
             {'username': 'john.smith', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(200, response.status_code)
-        self.assertTrue('pass' in response.data)
-        self.assertNotEqual('existing-password', response.data['pass'])
+        self.assertTrue('password' in response.data)
+        self.assertNotEqual('existing-password', response.data['password'])
 
-        user = authenticate(username='john.smith', password=response.data['pass'])
+        user = authenticate(username='john.smith', password=response.data['password'])
         self.assertIsNotNone(user)
 
 

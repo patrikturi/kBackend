@@ -38,7 +38,7 @@ class PasswordReset(APIView):
                      'uuid': uuid,
                      'is_created': is_created})
 
-        return Response({'pass': new_password})
+        return Response({'password': new_password})
 
 
 class Login(APIView):
