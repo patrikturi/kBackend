@@ -1,4 +1,3 @@
-import rest_framework.response
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,6 +5,7 @@ from rest_framework import status
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from soccer.helpers import perform_create_stat, create_match_with_users
 from users.models import User
+from soccer.serializers import MatchCreateSerializer
 
 
 class SoccerStats(APIView):
@@ -29,6 +29,10 @@ class Matches(APIView):
 
         # TODO: assert user not in both teams
         data = request.data
+        serializer = MatchCreateSerializer(data=data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         home_players = User.bulk_get_or_create(data['home_players'])
         away_players = User.bulk_get_or_create(data['away_players'])
 
