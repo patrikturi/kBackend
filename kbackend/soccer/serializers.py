@@ -15,10 +15,18 @@ class UsernamesField(serializers.ListField):
 
 
 class MatchCreateSerializer(serializers.ModelSerializer):
-    competition = serializers.Field(source='competition_name', required=False)
-    home_players = UsernamesField()
-    away_players = UsernamesField()
+    competition = serializers.CharField(source='competition_name', required=False)
+    home_players = UsernamesField(allow_empty=False)
+    away_players = UsernamesField(allow_empty=False)
 
     class Meta:
         model = Match
         fields = ('competition', 'home_team', 'away_team', 'home_players', 'away_players')
+
+    def validate(self, data):
+        home_players = data['home_players']
+        away_players = data['away_players']
+        users_in_both_teams = [user for user in home_players if user in away_players]
+        if len(users_in_both_teams) > 0:
+            raise serializers.ValidationError('Some players are present in both teams ({})'.format(', '.join(users_in_both_teams)))
+        return data
