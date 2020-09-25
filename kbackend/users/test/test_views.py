@@ -54,7 +54,7 @@ class PasswordResetTestCase(TestCase):
         get_basic_auth_username_mock.return_value = 'script1'
 
         response = self.client.post('/api/v1/users/reset-password/',
-            {'username': 'john.smith', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'john.smith', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)
@@ -70,7 +70,7 @@ class PasswordResetTestCase(TestCase):
         get_basic_auth_username_mock.return_value = 'script1'
 
         response = self.client.post('/api/v1/users/reset-password/',
-            {'username': 'john.smith', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'john.smith', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)

@@ -3,7 +3,7 @@ import os
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-from core.settings.common import *
+from core.settings.common import *  # noqa: F401, F403
 from core.settings.common import BASE_DIR, MIDDLEWARE
 
 

@@ -65,14 +65,14 @@ class CreateStatTestCase(TestCase):
     def test_with_missing_type(self, User_mock):
         User_mock.get_or_create.return_value = self.user
 
-        incomplete_data = {'stat_uuid':'some-uuid', 'value': 1}
+        incomplete_data = {'stat_uuid': 'some-uuid', 'value': 1}
         self.assertRaises(ValidationError, lambda: create_stat('user', incomplete_data))
 
     @patch('soccer.helpers.User')
     def test_with_nonexistent_stat(self, User_mock):
         User_mock.get_or_create.return_value = self.user
 
-        valid_data = {'stat_uuid':'some-uuid', 'stat_type': 'goal', 'value': 1}
+        valid_data = {'stat_uuid': 'some-uuid', 'stat_type': 'goal', 'value': 1}
         stat, created = create_stat('user', valid_data)
 
         self.assertIsNotNone(stat)
@@ -85,7 +85,7 @@ class CreateStatTestCase(TestCase):
 
         SoccerStat.objects.create(user=self.user, stat_uuid='some-uuid', stat_type='assist', value=1)
 
-        valid_data = {'stat_uuid':'some-uuid', 'stat_type': 'assist', 'value': 1}
+        valid_data = {'stat_uuid': 'some-uuid', 'stat_type': 'assist', 'value': 1}
         stat, created = create_stat('user', valid_data)
 
         self.assertIsNotNone(stat)
