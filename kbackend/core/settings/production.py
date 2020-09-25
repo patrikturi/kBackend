@@ -31,6 +31,8 @@ SESSION_COOKIE_SECURE = True
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+WSGI_APPLICATION = 'core.wsgi.application'
+
 MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Database
