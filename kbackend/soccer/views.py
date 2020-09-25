@@ -14,7 +14,10 @@ class SoccerStats(APIView):
         if not get_basic_auth_username(auth_header):
             return basic_auth_denied()
 
-        return perform_create_stat(request.data)
+        created = perform_create_stat(request.data)
+
+        ret_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response({}, status=ret_status)
 
 
 class Matches(APIView):

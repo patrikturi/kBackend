@@ -1,7 +1,5 @@
 import json
-from unittest.mock import patch
 
-from django.test import TestCase
 from users.models import User
 from users.test.testhelpers import ViewTestCase
 
@@ -11,7 +9,7 @@ class SoccerStatsTestCase(ViewTestCase):
     def test_invalid_token(self):
         User.objects.create(username='user')
 
-        valid_data = {'username': 'user', 'stat_uuid':'some-uuid', 'stat_type': 'goal', 'value': 1}
+        valid_data = {'username': 'user', 'stat_uuid': 'some-uuid', 'stat_type': 'goal', 'value': 1}
         response = self.client.post('/api/v1/soccer/stats/', valid_data,
                                     HTTP_AUTHORIZATION=self.invalid_auth)
 
@@ -20,7 +18,7 @@ class SoccerStatsTestCase(ViewTestCase):
     def test_success(self):
         User.objects.create(username='user')
 
-        valid_data = {'username': 'user', 'stat_uuid':'someuuid', 'stat_type': 'goal', 'value': 1}
+        valid_data = {'username': 'user', 'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1}
         response = self.client.post('/api/v1/soccer/stats/', valid_data,
                                     HTTP_AUTHORIZATION=self.valid_auth, content_type='application/json')
 

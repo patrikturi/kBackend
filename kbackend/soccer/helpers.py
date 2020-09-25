@@ -1,8 +1,6 @@
 import logging
 
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from soccer.serializers import SoccerStatCreateSerializer
 from soccer.models import SoccerStat, MatchParticipation, Match
@@ -14,32 +12,26 @@ logger = logging.getLogger('soccer')
 
 def perform_create_stat(data):
     username = data.get('username')
-
     create_data = dict(data)
     create_data.pop('username', None)
+
     stat, created = create_stat(username, create_data)
-
-    if not stat:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    ret_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
 
     logger.info({'event': 'create_stat', 'created': created, **create_data})
 
-    return Response({}, status=ret_status)
+    return created
 
 
 def create_stat(username, data):
 
     if not username:
-        return None, False
+        raise ValidationError('Username was not provided')
 
     user = User.get_or_create(username)
     data['user'] = user.id
 
     serializer = SoccerStatCreateSerializer(data=data)
-    if not serializer.is_valid():
-        return None, False
+    serializer.is_valid(raise_exception=True)
 
     stat_uuid = data['stat_uuid']
     stat_type = data['stat_type']
@@ -67,6 +59,9 @@ def perform_create_match(data):
                                     data['away_team'],
                                     home_players,
                                     away_players)
+
+    logger.info({'event': 'create_match', **data})
+
     return match
 
 
