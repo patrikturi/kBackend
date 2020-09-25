@@ -112,7 +112,8 @@ AUTH_USER_MODEL = 'users.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'EXCEPTION_HANDLER': 'users.custom_exception_handler',
 }
 
 os.makedirs(BASE_DIR / 'core' / 'logs' / 'app', exist_ok=True)

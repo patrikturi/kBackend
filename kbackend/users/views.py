@@ -5,9 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
 import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
@@ -54,7 +53,7 @@ class Login(APIView):
         user = authenticate(request, username=username, password=password)
         if not user:
             logger.info({'event': 'login_failed', 'username': username})
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            raise AuthenticationFailed()
 
         login(request, user)
 
@@ -77,7 +76,7 @@ class UserSearch(APIView):
     def get(self, request):
         username = request.GET.get('username', '').lower()
         if len(username) < 3:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError(f'Search term "{username}" is too short')
 
         found_users = User.objects.filter(username__contains=username).all().order_by('username')[:100]
 
@@ -111,14 +110,12 @@ class UserProfile(APIView):
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         if request.user.id != user_id and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
 
         serializer = UserProfileEditSerializer(user, request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response()
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response()
 
 
 class TestUsers(APIView):
