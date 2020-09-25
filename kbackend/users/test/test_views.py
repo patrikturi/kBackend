@@ -1,9 +1,7 @@
 import json
 import logging
-import rest_framework.response
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
-from django.conf import settings
 from django.contrib.auth import authenticate
 from django.test import TestCase
 

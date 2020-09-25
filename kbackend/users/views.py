@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
@@ -29,14 +30,15 @@ class PasswordReset(APIView):
         username = request.data.get('username')
         email = request.data.get('email', '')
         uuid = request.data.get('uuid')
-        user, is_created = User.reset_password(username, email, uuid, new_password)
-        if not user:
+        try:
+            user, is_created = User.reset_password(username, email, uuid, new_password)
+        except ValidationError:
             logger.info({'event': 'password_reset_failed', 'username': username, 'uuid': uuid})
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            raise
 
         logger.info({'event': 'password_reset_success',
-                     'username': username,
-                     'uuid': uuid,
+                     'username': user.username,
+                     'uuid': user.uuid,
                      'is_created': is_created})
 
         return Response({'password': new_password})

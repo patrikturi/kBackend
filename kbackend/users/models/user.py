@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from rest_framework.exceptions import ValidationError
+
 
 class User(AbstractUser):
 
@@ -90,15 +92,14 @@ class User(AbstractUser):
         is_new = user is None
         if user:
             if user.uuid and user.uuid != uuid:
-                return None, False
+                raise ValidationError('uuid of the user does not match')
             user.is_active = True
             user.uuid = uuid
             user.set_password(password)
             user.save()
         else:
             serializer = PasswordResetSerializer(data={'username': username, 'email': email, 'uuid': uuid})
-            if not serializer.is_valid():
-                return None, False
+            serializer.is_valid(raise_exception=True)
             user = User.objects.create_user(username, email=email, uuid=uuid, password=password)
         return user, is_new
 
