@@ -8,3 +8,5 @@ DEBUG = True
 BASIC_TOKENS = [
     'debug:token',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True

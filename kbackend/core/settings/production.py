@@ -45,3 +45,8 @@ BASIC_TOKENS = [
     '***REMOVED***',
     '***REMOVED***'
 ]
+
+CORS_ALLOWED_ORIGINS = ['https://ksoccersl.com']
+
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = ['ksoccersl.com']
