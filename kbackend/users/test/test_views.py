@@ -5,7 +5,7 @@ from unittest.mock import patch
 from django.contrib.auth import authenticate
 from django.test import TestCase
 
-from users.models import User
+from users.models import User, UserDetails
 from users.test.testhelpers import ViewTestCase
 
 logging.disable(logging.CRITICAL)
@@ -151,12 +151,16 @@ class GetUserProfileTestCase(TestCase):
 
     def test_success(self):
         User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
-        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+        user = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
         User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+
+        UserDetails.objects.create(user=user, biography='This is my bio.')
 
         response = self.client.get('/api/v1/users/profile/2/')
 
         self.assertEqual(200, response.status_code)
+        self.assertEqual('john.smith', response.data['username'])
+        self.assertEqual('This is my bio.', response.data['user_details'][0]['biography'])
 
     def test_not_found(self):
         response = self.client.get('/api/v1/users/profile/111/')

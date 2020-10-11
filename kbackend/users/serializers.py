@@ -26,7 +26,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user_details = UserDetailsSerializer(read_only=True)
+    user_details = UserDetailsSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
