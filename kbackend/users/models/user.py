@@ -24,6 +24,8 @@ class User(AbstractUser):
         },
     )
 
+    display_name = models.CharField(max_length=63)
+
     # http://wiki.secondlife.com/wiki/UUID
     uuid_validator = RegexValidator(r'^[a-z0-9-]{36}$')
 
