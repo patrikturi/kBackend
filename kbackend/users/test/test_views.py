@@ -37,7 +37,7 @@ class PasswordResetTestCase(TestCase):
     def test_without_uuid(self, get_basic_auth_username_mock):
         get_basic_auth_username_mock.return_value = 'script1'
 
-        response = self.client.post('/api/v1/users/reset-password/', {'username': 'john.smith'}, HTTP_AUTHORIZATION=self.dummy_auth)
+        response = self.client.post('/api/v1/users/reset-password/', {'username': 'JohN SmiTh'}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(400, response.status_code)
 
@@ -45,7 +45,7 @@ class PasswordResetTestCase(TestCase):
     def test_with_invalid_username(self, get_basic_auth_username_mock):
         get_basic_auth_username_mock.return_value = 'script1'
 
-        response = self.client.post('/api/v1/users/reset-password/', {'username': 'john smith', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+        response = self.client.post('/api/v1/users/reset-password/', {'username': 'JohN SmiTh The Great', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(400, response.status_code)
 
@@ -54,7 +54,7 @@ class PasswordResetTestCase(TestCase):
         get_basic_auth_username_mock.return_value = 'script1'
 
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'john.smith', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)
@@ -70,7 +70,7 @@ class PasswordResetTestCase(TestCase):
         get_basic_auth_username_mock.return_value = 'script1'
 
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'john.smith', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)
