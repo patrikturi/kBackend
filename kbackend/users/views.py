@@ -12,7 +12,7 @@ import nanoid
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
 from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer
-from users.helpers import get_test_users, to_username
+from users.helpers import get_test_users, normalize_display_name, to_username
 
 logger = logging.getLogger('users')
 
@@ -26,7 +26,7 @@ class PasswordReset(APIView):
             return basic_auth_denied()
 
         new_password = nanoid.generate(size=20)
-        display_name = request.data.get('username')
+        display_name = normalize_display_name(request.data.get('username'))
         username = to_username(display_name)
         email = request.data.get('email', '')
         uuid = request.data.get('uuid')
