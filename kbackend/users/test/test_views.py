@@ -133,6 +133,18 @@ class UserSearchTestCase(TestCase):
         usernames = [user['username'] for user in response.data]
         self.assertEqual(set(['bobby.marley', 'big.bobman']), set(usernames))
 
+    def test_with_full_name(self):
+        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
+        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+
+        response = self.client.get('/api/v1/users/search/?username=Bobby%20M')
+
+        self.assertEqual(200, response.status_code)
+
+        usernames = [user['username'] for user in response.data]
+        self.assertEqual(['bobby.marley'], usernames)
+
     def test_with_no_results(self):
         User.objects.create_user('john.smith', uuid=random_uuid(), password='abcd')
 

@@ -75,7 +75,7 @@ class Logout(APIView):
 class UserSearch(APIView):
 
     def get(self, request):
-        username = request.GET.get('username', '').lower()
+        username = input_to_username(request.GET.get('username', ''))
         if len(username) < 3:
             raise ValidationError(f'Search term "{username}" is too short')
 
