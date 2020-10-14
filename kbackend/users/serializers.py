@@ -14,7 +14,7 @@ class UserListItem(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'profile_picture_url', 'introduction')
+        fields = ('id', 'username', 'display_name', 'profile_picture_url', 'introduction')
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
@@ -30,9 +30,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'profile_picture_url', 'introduction', 'user_details',
-        'kcoins', 'goals', 'assists', 'available_for_transfer',
-        'date_joined')
+        fields = ('id', 'username', 'display_name', 'profile_picture_url', 'introduction', 'user_details',
+                  'kcoins', 'goals', 'assists', 'available_for_transfer', 'date_joined')
 
 
 class UserProfileEditSerializer(serializers.ModelSerializer):
