@@ -107,29 +107,38 @@ class User(AbstractUser):
         return user, is_new
 
     @classmethod
-    def get_or_create(cls, username):
+    def get_or_create(cls, display_name):
         from users.helpers import to_username, normalize_display_name
+
+        display_name = normalize_display_name(display_name)
+        username = to_username(display_name)
         user = User.objects.filter(username=username).first()
 
         if not user:
-            user = cls._create_non_registered(username)
+            user = cls._create_non_registered(username, display_name)
         return user
 
     @classmethod
-    def bulk_get_or_create(cls, usernames):
+    def bulk_get_or_create(cls, display_names):
+        from users.helpers import to_username, normalize_display_name
+
+        display_names = [normalize_display_name(name) for name in display_names]
+        name_pairs = [(to_username(name), name) for name in display_names]
+        usernames = [pair[0] for pair in name_pairs]
+
         users = list(User.objects.filter(username__in=usernames).all())
-        existing_usernames = [user.username for user in users]
+        existing_usernames = {user.username for user in users}
 
-        missing_usernames = set(usernames) - set(existing_usernames)
+        missing_name_pairs = [pair for pair in name_pairs if pair[0] not in existing_usernames]
 
-        for username in missing_usernames:
-            new_user = cls._create_non_registered(username)
+        for username, display_name in missing_name_pairs:
+            new_user = cls._create_non_registered(username, display_name)
             users.append(new_user)
         return users
 
     @classmethod
-    def _create_non_registered(cls, username):
-        user = User.objects.create_user(username, is_active=False)
+    def _create_non_registered(cls, username, display_name):
+        user = User.objects.create_user(username, display_name=display_name, is_active=False)
         user.set_unusable_password()
         user.save()
         return user
