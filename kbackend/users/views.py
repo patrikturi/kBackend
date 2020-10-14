@@ -12,7 +12,7 @@ import nanoid
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
 from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer
-from users.helpers import get_test_users, normalize_display_name, to_username
+from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
 
 logger = logging.getLogger('users')
 
@@ -49,7 +49,7 @@ class Login(APIView):
     def post(self, request):
         if request.user.is_authenticated:
             return Response()
-        username = request.POST.get('username')
+        username = input_to_username(request.POST.get('username'))
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if not user:

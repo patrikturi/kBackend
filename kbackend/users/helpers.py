@@ -7,7 +7,11 @@ def get_test_users():
     return list(test_users[:200])
 
 
-def normalize_display_name(display_name):
+def input_to_username(name):
+    return to_username(normalize_display_name(name, check_name=False))
+
+
+def normalize_display_name(display_name, check_name=True):
     if display_name and '.' in display_name:
         raise ValidationError('Expected Legacy Name instead of Username')
     return display_name.rsplit('Resident', maxsplit=1)[0].strip() if display_name else display_name
