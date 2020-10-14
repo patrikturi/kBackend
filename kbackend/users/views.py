@@ -140,6 +140,6 @@ class TestUsers(APIView):
 
         username = f'test-{nanoid.generate(size=4)}'
 
-        new_user = User.objects.create_user(username, is_test=True)
+        new_user = User.objects.create_user(username, display_name=username, is_test=True)
 
         return Response(data={'username': new_user.username})
