@@ -1,5 +1,6 @@
 from django.test import TestCase
 from users.models import User
+from rest_framework.exceptions import ValidationError
 
 
 class GetOrCreateUserTestCase(TestCase):
@@ -18,6 +19,9 @@ class GetOrCreateUserTestCase(TestCase):
         self.assertEqual('john.smith', user.username)
         self.assertFalse(user.is_active)
         self.assertEqual('John SmiTH', user.display_name)
+
+    def test_invalid_name(self):
+        self.assertRaises(ValidationError, lambda: User.get_or_create('john.smith'))
 
 
 class BulkGetOrCreateTestCase(TestCase):

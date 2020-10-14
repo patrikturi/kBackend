@@ -10,6 +10,7 @@ class User(AbstractUser):
 
     # http://wiki.secondlife.com/wiki/Category:LSL_Avatar/Name
     # http://wiki.secondlife.com/wiki/Limits
+    # SL Username
     # eg. 'john.smith' or 'john'
     username_validator = RegexValidator(r'^[a-z0-9]+\.?[a-z0-9]+$')
 
@@ -24,6 +25,7 @@ class User(AbstractUser):
         },
     )
 
+    # Set to SL Legacy name by default
     display_name = models.CharField(max_length=63)
 
     # http://wiki.secondlife.com/wiki/UUID
@@ -107,10 +109,10 @@ class User(AbstractUser):
         return user, is_new
 
     @classmethod
-    def get_or_create(cls, display_name):
+    def get_or_create(cls, provided_name):
         from users.helpers import to_username, normalize_display_name
 
-        display_name = normalize_display_name(display_name)
+        display_name = normalize_display_name(provided_name)
         username = to_username(display_name)
         user = User.objects.filter(username=username).first()
 
@@ -119,10 +121,10 @@ class User(AbstractUser):
         return user
 
     @classmethod
-    def bulk_get_or_create(cls, display_names):
+    def bulk_get_or_create(cls, provided_names):
         from users.helpers import to_username, normalize_display_name
 
-        display_names = [normalize_display_name(name) for name in display_names]
+        display_names = [normalize_display_name(name) for name in provided_names]
         name_pairs = [(to_username(name), name) for name in display_names]
         usernames = [pair[0] for pair in name_pairs]
 

@@ -1,4 +1,5 @@
 from users.models import User
+from rest_framework.exceptions import ValidationError
 
 
 def get_test_users():
@@ -7,6 +8,8 @@ def get_test_users():
 
 
 def normalize_display_name(display_name):
+    if display_name and '.' in display_name:
+        raise ValidationError('Expected Legacy Name instead of Username')
     return display_name.rsplit('Resident', maxsplit=1)[0].strip() if display_name else display_name
 
 
