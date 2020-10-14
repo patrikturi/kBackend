@@ -7,7 +7,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'uuid')
+        fields = ('username', 'display_name', 'email', 'uuid', 'password')
 
 
 class UserListItem(serializers.ModelSerializer):

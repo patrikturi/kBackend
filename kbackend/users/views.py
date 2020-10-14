@@ -31,7 +31,7 @@ class PasswordReset(APIView):
         email = request.data.get('email', '')
         uuid = request.data.get('uuid')
         try:
-            user, is_created = User.reset_password(username, email, uuid, new_password)
+            user, is_created = User.reset_password(username, display_name, email, uuid, new_password)
         except ValidationError:
             logger.info({'event': 'password_reset_failed', 'username': username, 'uuid': uuid})
             raise
