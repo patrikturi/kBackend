@@ -46,7 +46,7 @@ BASIC_TOKENS = [
     '***REMOVED***'
 ]
 
-CORS_ALLOWED_ORIGINS = ['https://ksoccersl.com']
+CORS_ALLOWED_ORIGINS = ['https://ksoccersl.com', 'https://kfrontend-staging.firebaseapp.com']
 
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ['ksoccersl.com']
+CSRF_TRUSTED_ORIGINS = ['ksoccersl.com', 'kfrontend-staging.firebaseapp.com']
