@@ -132,3 +132,6 @@ DATABASES = {
         'NAME': DB_PATH / 'db.sqlite3',
     }
 }
+
+# Required to login with SPA
+SESSION_COOKIE_HTTPONLY = False
