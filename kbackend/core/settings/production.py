@@ -1,5 +1,6 @@
 import os
 
+from django.core.exceptions import DisallowedHost
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -7,10 +8,19 @@ from core.settings.common import *  # noqa: F401, F403
 from core.settings.common import BASE_DIR, MIDDLEWARE
 
 
+def before_send(event, hint):
+    if 'exc_info' in hint:
+        exc_type, exc_value, tb = hint['exc_info']
+        if isinstance(exc_value, DisallowedHost):
+            return None
+    return event
+
+
 if not os.environ.get('LOCAL_TEST'):
     sentry_sdk.init(
         dsn="https://918cdbc4393a4dc0aa38530f61da9daf@o448987.ingest.sentry.io/5431213",
         integrations=[DjangoIntegration()],
+        before_send=before_send,
 
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
