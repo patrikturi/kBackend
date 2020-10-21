@@ -47,14 +47,9 @@ MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 # TODO: use posgres
 
-# TODO
-BASIC_TOKENS = [
-    '***REMOVED***',
-    '***REMOVED***'
-]
+BASIC_TOKENS = os.environ['BASIC_TOKENS'].split(' ')
 
 CORS_ALLOWED_ORIGINS = ['https://ksoccersl.com', 'https://kfrontend-staging.firebaseapp.com', 'https://localhost:3000']
 
