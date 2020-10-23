@@ -62,7 +62,7 @@ class LoginView(APIView):
 
         logger.info({'event': 'login_success', 'username': user.username})
 
-        return Response()
+        return Response({'username': username})
 
 
 class LogoutView(APIView):
@@ -71,7 +71,7 @@ class LogoutView(APIView):
         if request.user.is_authenticated:
             logger.info({'event': 'logout', 'username': request.user.username})
         logout(request)
-        return Response()
+        return Response({})
 
 
 class UserSearchview(APIView):
@@ -119,7 +119,7 @@ class UserProfileView(APIView):
         serializer = UserProfileEditSerializer(user, request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response()
+        return Response(serializer.data)
 
 
 class TestUsersView(APIView):
@@ -145,4 +145,4 @@ class TestUsersView(APIView):
 
         new_user = User.objects.create_user(username, display_name=username, is_test=True)
 
-        return Response(data={'username': new_user.username})
+        return Response({'username': new_user.username})

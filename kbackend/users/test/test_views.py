@@ -107,6 +107,8 @@ class LoginTestCase(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertIsNotNone(response.cookies.get('sessionid'))
+        response_data = json.loads(response.content)
+        self.assertEqual('bobby.marley', response_data['username'])
 
     def test_with_wrong_password(self):
         username = 'bobby.marley'
@@ -210,6 +212,8 @@ class PatchUserProfileTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.user1.refresh_from_db()
         self.assertEqual("Hi, I'm Bob!", self.user1.introduction)
+        response_data = json.loads(response.content)
+        self.assertEqual("Hi, I'm Bob!", response_data['introduction'])
 
     def test_with_different_user(self):
         self.client.force_login(self.user2)
