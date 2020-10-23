@@ -6,7 +6,7 @@ from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from soccer.helpers import perform_create_stat, perform_create_match
 
 
-class SoccerStats(APIView):
+class SoccerStatsView(APIView):
 
     def post(self, request):
         auth_header = request.headers.get('Authorization')
@@ -20,7 +20,7 @@ class SoccerStats(APIView):
         return Response({}, status=ret_status)
 
 
-class Matches(APIView):
+class MatchesView(APIView):
 
     def post(self, request):
         auth_header = request.headers.get('Authorization')

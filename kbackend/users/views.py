@@ -18,7 +18,7 @@ from users.helpers import get_test_users, normalize_display_name, to_username, i
 logger = logging.getLogger('users')
 
 
-class PasswordReset(APIView):
+class PasswordResetView(APIView):
 
     def post(self, request):
         auth_header = request.headers.get('Authorization')
@@ -45,7 +45,7 @@ class PasswordReset(APIView):
         return Response({'password': new_password})
 
 
-class Login(APIView):
+class LoginView(APIView):
 
     @method_decorator(ensure_csrf_cookie)
     def post(self, request):
@@ -65,7 +65,7 @@ class Login(APIView):
         return Response()
 
 
-class Logout(APIView):
+class LogoutView(APIView):
 
     def get(self, request):
         if request.user.is_authenticated:
@@ -74,7 +74,7 @@ class Logout(APIView):
         return Response()
 
 
-class UserSearch(APIView):
+class UserSearchview(APIView):
 
     def get(self, request):
         username = input_to_username(request.GET.get('username', ''))
@@ -93,7 +93,7 @@ class UserSearch(APIView):
         return Response(data)
 
 
-class PlayerMarketplace(APIView):
+class PlayerMarketplaceView(APIView):
 
     def get(self, request):
         found_users = User.objects.filter(available_for_transfer=True).all().order_by('username')[:100]
@@ -102,7 +102,7 @@ class PlayerMarketplace(APIView):
         return Response(data)
 
 
-class UserProfile(APIView):
+class UserProfileView(APIView):
 
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
@@ -122,7 +122,7 @@ class UserProfile(APIView):
         return Response()
 
 
-class TestUsers(APIView):
+class TestUsersView(APIView):
 
     def get(self, request):
         auth_header = request.headers.get('Authorization')
