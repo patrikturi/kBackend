@@ -25,6 +25,13 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         fields = ('id', 'biography', 'updated_at')
 
 
+class LoginSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'display_name', 'profile_picture_url')
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     user_details = UserDetailsSerializer(many=True, read_only=True)
 

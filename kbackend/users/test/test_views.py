@@ -101,7 +101,7 @@ class LoginTestCase(TestCase):
     def test_success(self):
         username = 'bobby.marley'
         password = 'Thepassword123'
-        User.objects.create_user(username, uuid=random_uuid(), password=password)
+        User.objects.create_user(username, display_name='Bobby Marley', uuid=random_uuid(), password=password)
 
         response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': password})
 
@@ -109,7 +109,7 @@ class LoginTestCase(TestCase):
         self.assertIsNotNone(response.cookies.get('sessionid'))
         response_data = json.loads(response.content)
         self.assertEqual(1, response_data['id'])
-        self.assertEqual('bobby.marley', response_data['username'])
+        self.assertEqual('Bobby Marley', response_data['display_name'])
 
     def test_with_wrong_password(self):
         username = 'bobby.marley'

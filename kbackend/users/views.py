@@ -12,7 +12,7 @@ import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
-from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer
+from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
 
 logger = logging.getLogger('users')
@@ -50,7 +50,7 @@ class LoginView(APIView):
     @method_decorator(ensure_csrf_cookie)
     def post(self, request):
         if request.user.is_authenticated:
-            return Response({'id': request.user.id, 'username': request.user.username})
+            return Response(LoginSerializer(request.user).data)
         username = input_to_username(request.POST.get('username'))
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
@@ -62,7 +62,7 @@ class LoginView(APIView):
 
         logger.info({'event': 'login_success', 'username': user.username})
 
-        return Response({'id': user.id, 'username': username})
+        return Response(LoginSerializer(user).data)
 
 
 class LogoutView(APIView):
