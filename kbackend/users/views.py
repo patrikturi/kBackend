@@ -50,7 +50,7 @@ class LoginView(APIView):
     @method_decorator(ensure_csrf_cookie)
     def post(self, request):
         if request.user.is_authenticated:
-            return Response()
+            return Response({'id': request.user.id, 'username': request.user.username})
         username = input_to_username(request.POST.get('username'))
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
@@ -62,7 +62,7 @@ class LoginView(APIView):
 
         logger.info({'event': 'login_success', 'username': user.username})
 
-        return Response({'username': username})
+        return Response({'id': user.id, 'username': username})
 
 
 class LogoutView(APIView):

@@ -108,6 +108,7 @@ class LoginTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertIsNotNone(response.cookies.get('sessionid'))
         response_data = json.loads(response.content)
+        self.assertEqual(1, response_data['id'])
         self.assertEqual('bobby.marley', response_data['username'])
 
     def test_with_wrong_password(self):
