@@ -12,7 +12,7 @@ import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User
-from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer
+from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
 
 logger = logging.getLogger('users')
@@ -120,6 +120,15 @@ class UserProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class PrivateUserProfileView(APIView):
+
+    @method_decorator(login_required)
+    def get(self, request):
+        user = get_object_or_404(User, id=request.user.id)
+
+        return Response(PrivateUserProfileSerializer(user).data)
 
 
 class TestUsersView(APIView):

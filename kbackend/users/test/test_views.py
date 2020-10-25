@@ -224,6 +224,29 @@ class PatchUserProfileTestCase(TestCase):
         self.assertEqual(403, response.status_code)
 
 
+class GePrivatetUserProfileTestCase(TestCase):
+
+    def test_success(self):
+        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
+        user = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+
+        UserDetails.objects.create(user=user, biography='This is my bio.')
+
+        self.client.force_login(user)
+
+        response = self.client.get('/api/v1/users/me/profile/')
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('john.smith', response.data['username'])
+        self.assertEqual('This is my bio.', response.data['user_details'][0]['biography'])
+
+    def test_not_logged_in(self):
+        response = self.client.get('/api/v1/users/me/profile/')
+
+        self.assertEqual(302, response.status_code)
+
+
 class CreateTestUserTestCase(ViewTestCase):
 
     def test_invalid_auth(self):

@@ -8,5 +8,6 @@ urlpatterns = [
     path('search/', views.UserSearchview.as_view()),
     path('marketplace/', views.PlayerMarketplaceView.as_view()),
     path('profile/<int:user_id>/', views.UserProfileView.as_view()),
+    path('me/profile/', views.PrivateUserProfileView.as_view()),
     path('test-users/', views.TestUsersView.as_view()),
 ]

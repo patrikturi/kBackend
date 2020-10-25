@@ -47,3 +47,7 @@ class UserProfileEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'introduction', 'user_details', 'available_for_transfer',)
+
+
+class PrivateUserProfileSerializer(UserProfileSerializer):
+    pass
