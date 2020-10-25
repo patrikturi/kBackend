@@ -55,3 +55,9 @@ CORS_ALLOWED_ORIGINS = ['https://ksoccersl.com', 'https://kfrontend-staging.fire
 
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ['ksoccersl.com', 'kfrontend-staging.firebaseapp.com', 'localhost:3000']
+
+CSRF_COOKIE_SECURE = True
+# We use session login but backend is on a different domain
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+LANGUAGE_COOKIE_SAMESITE = 'None'
