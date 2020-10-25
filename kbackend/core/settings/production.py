@@ -53,8 +53,9 @@ MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
 BASIC_TOKENS = os.environ['BASIC_TOKENS'].split(' ')
 
 CORS_ALLOWED_ORIGINS = ['https://ksoccersl.com', 'https://kfrontend-staging.firebaseapp.com', 'https://localhost:3000']
-
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Set-Cookie']
+
 CSRF_TRUSTED_ORIGINS = ['ksoccersl.com', 'kfrontend-staging.firebaseapp.com', 'localhost:3000']
 
 # We use session login but backend is on a different domain
