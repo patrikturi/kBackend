@@ -50,6 +50,17 @@ class PasswordResetTestCase(TestCase):
         self.assertEqual(400, response.status_code)
 
     @patch('users.views.get_basic_auth_username')
+    def test_with_staff_user(self, get_basic_auth_username_mock):
+        User.objects.create_user('john.smith', password='existing-password', is_staff=True)
+
+        get_basic_auth_username_mock.return_value = 'script1'
+
+        response = self.client.post('/api/v1/users/reset-password/',
+                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+
+        self.assertEqual(403, response.status_code)
+
+    @patch('users.views.get_basic_auth_username')
     def test_with_nonexistent_user(self, get_basic_auth_username_mock):
         get_basic_auth_username_mock.return_value = 'script1'
 

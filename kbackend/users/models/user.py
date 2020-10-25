@@ -3,7 +3,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 
 
 class User(AbstractUser):
@@ -101,6 +101,8 @@ class User(AbstractUser):
 
         is_new = user is None
         if user:
+            if user.is_staff:
+                raise PermissionDenied('Staff users are not allowed to reset password this way.')
             if user.uuid and user.uuid != uuid:
                 raise ValidationError('uuid of the user does not match')
             user.is_active = True
