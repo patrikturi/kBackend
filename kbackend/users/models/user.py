@@ -43,6 +43,7 @@ class User(AbstractUser):
     kcoins = models.IntegerField(default=0)
     goals = models.IntegerField(default=0)
     assists = models.IntegerField(default=0)
+    matches = models.IntegerField(default=0)
 
     updated_at = models.DateTimeField(auto_now=True)
 
