@@ -74,4 +74,6 @@ def create_match_with_users(competition_name, home_team_name, away_team_name, ho
     away_participartions = [MatchParticipation(user=user, match=match, side='away') for user in away_players]
     MatchParticipation.objects.bulk_create(away_participartions)
 
+    User.bulk_add_match(home_players + away_players)
+
     return match

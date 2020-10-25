@@ -50,3 +50,18 @@ class BulkGetOrCreateTestCase(TestCase):
 
         usernames = [user.username for user in users]
         self.assertEqual(set(['usera', 'userb', 'userc']), set(usernames))
+
+
+class BulkAddMatchTestCase(TestCase):
+
+    def test_success(self):
+        users = User.bulk_get_or_create(['John Sonmez', 'Johnny Resident'])
+        users[1].matches = 3
+        users[1].save()
+
+        User.bulk_add_match(users)
+
+        users[0].refresh_from_db()
+        users[1].refresh_from_db()
+        self.assertEqual(1, users[0].matches)
+        self.assertEqual(4, users[1].matches)

@@ -89,6 +89,11 @@ class User(AbstractUser):
             self.save()
 
     @classmethod
+    def bulk_add_match(cls, users):
+        user_ids = [user.id for user in users]
+        User.objects.filter(id__in=user_ids).update(matches=models.F('matches') + 1)
+
+    @classmethod
     def reset_password(cls, username, display_name, email, uuid, password):
         from users.serializers import PasswordResetSerializer
 
