@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
@@ -47,7 +46,6 @@ class PasswordResetView(APIView):
 
 class LoginView(APIView):
 
-    @method_decorator(ensure_csrf_cookie)
     def post(self, request):
         if request.user.is_authenticated:
             return Response(LoginSerializer(request.user).data)
@@ -109,7 +107,6 @@ class UserProfileView(APIView):
 
         return Response(UserProfileSerializer(user).data)
 
-    @method_decorator(ensure_csrf_cookie)
     @method_decorator(login_required)
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)

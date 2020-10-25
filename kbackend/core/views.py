@@ -8,4 +8,4 @@ class CsrfView(APIView):
 
     @method_decorator(ensure_csrf_cookie)
     def get(self, request):
-        return Response({"token": request.META['CSRF_COOKIE']})
+        return Response({"csrftoken": request.META['CSRF_COOKIE']})
