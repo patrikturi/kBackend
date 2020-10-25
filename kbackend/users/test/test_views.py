@@ -121,6 +121,7 @@ class LoginTestCase(TestCase):
         response_data = json.loads(response.content)
         self.assertEqual(1, response_data['id'])
         self.assertEqual('Bobby Marley', response_data['display_name'])
+        self.assertIsNotNone(response_data.get('csrftoken'))
 
     def test_with_wrong_password(self):
         username = 'bobby.marley'

@@ -48,7 +48,7 @@ class LoginView(APIView):
 
     def post(self, request):
         if request.user.is_authenticated:
-            return Response(LoginSerializer(request.user).data)
+            return self._ok_response(request.user, request.META['CSRF_COOKIE'])
         username = input_to_username(request.POST.get('username'))
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
@@ -60,7 +60,12 @@ class LoginView(APIView):
 
         logger.info({'event': 'login_success', 'username': user.username})
 
-        return Response(LoginSerializer(user).data)
+        return self._ok_response(user, request.META['CSRF_COOKIE'])
+
+    def _ok_response(self, user, csrftoken):
+        response = Response(LoginSerializer(user).data)
+        response.data['csrftoken'] = csrftoken
+        return response
 
 
 class LogoutView(APIView):
