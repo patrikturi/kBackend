@@ -38,7 +38,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'display_name', 'profile_picture_url', 'introduction', 'user_details',
-                  'kcoins', 'goals', 'assists', 'available_for_transfer', 'date_joined')
+                  'kcoins', 'goals', 'assists', 'matches', 'available_for_transfer', 'date_joined')
 
 
 class UserProfileEditSerializer(serializers.ModelSerializer):
