@@ -228,6 +228,25 @@ class PatchUserProfileTestCase(TestCase):
         response_data = json.loads(response.content)
         self.assertEqual("Hi, I'm Bob!", response_data['introduction'])
 
+    def test_create_userdetails(self):
+        self.client.force_login(self.user1)
+
+        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!", 'user_details': {'biography': 'My Bio'}}, content_type='application/json')
+
+        self.assertEqual(200, response.status_code)
+        user_details = UserDetails.objects.get(user=self.user1)
+        self.assertEqual('My Bio', user_details.biography)
+
+    def test_update_userdetails(self):
+        self.client.force_login(self.user1)
+        user_details = UserDetails.objects.create(user=self.user1, biography='Original Bio')
+
+        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!", 'user_details': {'biography': 'My Bio'}}, content_type='application/json')
+
+        self.assertEqual(200, response.status_code)
+        user_details.refresh_from_db()
+        self.assertEqual('My Bio', user_details.biography)
+
     def test_with_different_user(self):
         self.client.force_login(self.user2)
 

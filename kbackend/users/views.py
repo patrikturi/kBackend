@@ -10,8 +10,8 @@ from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, Va
 import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
-from users.models import User
-from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer
+from users.models import User, UserDetails
+from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer, UserDetailsSerializer, UserDetailsEditSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
 
 logger = logging.getLogger('users')
@@ -118,10 +118,26 @@ class UserProfileView(APIView):
         if request.user.id != user_id and not request.user.is_superuser:
             raise PermissionDenied()
 
-        serializer = UserProfileEditSerializer(user, request.data, partial=True)
+        patch_data = {key: value for key, value in request.data.items() if key != 'user_details'}
+        if 'user_details' in request.data:
+            self.update_user_details(user, request.data['user_details'])
+
+        serializer = UserProfileEditSerializer(user, patch_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    @classmethod
+    def update_user_details(cls, user, data):
+        instance = UserDetails.objects.filter(user=user).first()
+        if instance is None:
+            data['user'] = user.id
+            is_partial = False
+        else:
+            is_partial = True
+        serializer = UserDetailsEditSerializer(instance, data, partial=is_partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
 
 class PrivateUserProfileView(APIView):

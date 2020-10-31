@@ -25,6 +25,14 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         fields = ('id', 'biography', 'updated_at')
 
 
+class UserDetailsEditSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        model = UserDetails
+        fields = ('user', 'id', 'biography')
+
+
 class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -42,11 +50,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserProfileEditSerializer(serializers.ModelSerializer):
-    user_details = UserDetailsSerializer()
 
     class Meta:
         model = User
-        fields = ('id', 'introduction', 'user_details', 'available_for_transfer',)
+        fields = ('id', 'introduction', 'available_for_transfer',)
 
 
 class PrivateUserProfileSerializer(UserProfileSerializer):
