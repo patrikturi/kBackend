@@ -119,13 +119,17 @@ class UserProfileView(APIView):
             raise PermissionDenied()
 
         patch_data = {key: value for key, value in request.data.items() if key != 'user_details'}
+        saved_user_details = None
         if 'user_details' in request.data:
-            self.update_user_details(user, request.data['user_details'])
+            saved_user_details = self.update_user_details(user, request.data['user_details'])
 
         serializer = UserProfileEditSerializer(user, patch_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        saved_data = dict(serializer.data)
+        if saved_user_details:
+            saved_data['user_details'] = [saved_user_details]
+        return Response(saved_data)
 
     @classmethod
     def update_user_details(cls, user, data):
@@ -138,6 +142,7 @@ class UserProfileView(APIView):
         serializer = UserDetailsEditSerializer(instance, data, partial=is_partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return serializer.data
 
 
 class PrivateUserProfileView(APIView):
