@@ -132,3 +132,5 @@ DATABASES = {
         'NAME': DB_PATH / 'db.sqlite3',
     }
 }
+
+LOGIN_URL = '/login'
