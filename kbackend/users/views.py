@@ -178,3 +178,13 @@ class TestUsersView(APIView):
         new_user = User.objects.create_user(username, display_name=username, is_test=True)
 
         return Response({'username': new_user.username})
+
+
+class ChangePasswordView(APIView):
+
+    @method_decorator(auth_required)
+    def post(self, request):
+        old_password = request.POST.get('old_password', '')
+        new_password = request.POST.get('new_password', '')
+        request.user.change_password(old_password, new_password)
+        return Response({})

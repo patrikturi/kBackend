@@ -1,6 +1,7 @@
+from django.contrib.auth import authenticate
 from django.test import TestCase
 from users.models import User
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, AuthenticationFailed
 
 
 class GetOrCreateUserTestCase(TestCase):
@@ -65,3 +66,30 @@ class BulkAddMatchTestCase(TestCase):
         users[1].refresh_from_db()
         self.assertEqual(1, users[0].matches)
         self.assertEqual(4, users[1].matches)
+
+
+class ChangePasswordTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.user = User.objects.create(username='user1')
+        self.user.set_password('orig-password')
+        self.user.save()
+
+    def test_success(self):
+        self.user.change_password('orig-password', 'new-password')
+
+        auth_user = authenticate(username='user1', password='new-password')
+        self.assertIsNotNone(auth_user)
+
+    def test_with_invalid_old_password(self):
+        self.assertRaises(AuthenticationFailed, lambda: self.user.change_password('invalid-password', 'new-password'))
+
+        auth_user = authenticate(username='user1', password='new-password')
+        self.assertIsNone(auth_user)
+
+    def test_with_empty_new_password(self):
+        self.assertRaises(ValidationError, lambda: self.user.change_password('orig-password', ''))
+
+        auth_user = authenticate(username='user1', password='orig-password')
+        self.assertIsNotNone(auth_user)

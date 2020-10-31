@@ -3,6 +3,7 @@ from users import views
 
 urlpatterns = [
     path('reset-password/', views.PasswordResetView.as_view()),
+    path('change-password/', views.ChangePasswordView.as_view()),
     path('login/', views.LoginView.as_view()),
     path('logout/', views.LogoutView.as_view()),
     path('search/', views.UserSearchview.as_view()),

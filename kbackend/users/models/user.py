@@ -1,9 +1,10 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import ValidationError, PermissionDenied, AuthenticationFailed
 
 
 class User(AbstractUser):
@@ -87,6 +88,14 @@ class User(AbstractUser):
 
         if changed:
             self.save()
+
+    def change_password(self, old_password, new_password):
+        if not self.check_password(old_password):
+            raise AuthenticationFailed()
+        if len(new_password) < 8:
+            raise ValidationError('New password is too short')
+        self.set_password(new_password)
+        self.save()
 
     @classmethod
     def bulk_add_match(cls, users):
