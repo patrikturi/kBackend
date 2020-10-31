@@ -1,7 +1,6 @@
 import logging
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
@@ -11,8 +10,9 @@ import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User, UserDetails
-from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer, UserDetailsSerializer, UserDetailsEditSerializer
+from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer, UserDetailsEditSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
+from users.auth_helpers import auth_required
 
 logger = logging.getLogger('users')
 
@@ -112,7 +112,7 @@ class UserProfileView(APIView):
 
         return Response(UserProfileSerializer(user).data)
 
-    @method_decorator(login_required)
+    @method_decorator(auth_required)
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         if request.user.id != user_id and not request.user.is_superuser:
@@ -147,7 +147,7 @@ class UserProfileView(APIView):
 
 class PrivateUserProfileView(APIView):
 
-    @method_decorator(login_required)
+    @method_decorator(auth_required)
     def get(self, request):
         user = get_object_or_404(User, id=request.user.id)
 

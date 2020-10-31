@@ -2,6 +2,7 @@ from base64 import b64decode
 
 from django.conf import settings
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.response import Response
 
 
@@ -26,3 +27,11 @@ def get_basic_auth_username(auth_header):
 
 def basic_auth_denied():
     return Response(status=status.HTTP_401_UNAUTHORIZED, headers={'WWW-Authenticate': 'Basic realm="Users"'})
+
+
+def auth_required(function):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise NotAuthenticated()
+        return function(request, *args, **kwargs)
+    return wrapper

@@ -254,6 +254,11 @@ class PatchUserProfileTestCase(TestCase):
 
         self.assertEqual(403, response.status_code)
 
+    def test_not_logged_in(self):
+        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+
+        self.assertEqual(401, response.status_code)
+
 
 class GePrivatetUserProfileTestCase(TestCase):
 
@@ -275,7 +280,7 @@ class GePrivatetUserProfileTestCase(TestCase):
     def test_not_logged_in(self):
         response = self.client.get('/api/v1/users/me/profile/')
 
-        self.assertEqual(302, response.status_code)
+        self.assertEqual(401, response.status_code)
 
 
 class CreateTestUserTestCase(ViewTestCase):
