@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.test import TestCase
 from users.models import User
-from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from rest_framework.exceptions import ValidationError, PermissionDenied
 
 
 class GetOrCreateUserTestCase(TestCase):
@@ -83,7 +83,7 @@ class ChangePasswordTestCase(TestCase):
         self.assertIsNotNone(auth_user)
 
     def test_with_invalid_old_password(self):
-        self.assertRaises(AuthenticationFailed, lambda: self.user.change_password('invalid-password', 'new-password'))
+        self.assertRaises(PermissionDenied, lambda: self.user.change_password('invalid-password', 'new-password'))
 
         auth_user = authenticate(username='user1', password='new-password')
         self.assertIsNone(auth_user)

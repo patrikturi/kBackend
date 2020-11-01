@@ -91,7 +91,7 @@ class User(AbstractUser):
 
     def change_password(self, old_password, new_password):
         if not self.check_password(old_password):
-            raise AuthenticationFailed()
+            raise PermissionDenied()
         if len(new_password) < 8:
             raise ValidationError('New password is too short')
         self.set_password(new_password)
