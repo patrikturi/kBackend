@@ -86,12 +86,6 @@ class UserSearchview(APIView):
 
         found_users = User.objects.filter(username__contains=username).all().order_by('username')[:100]
 
-        user_username = request.user.username if request.user else ''
-        logger.info({'event': 'user_search',
-                     'username': user_username,
-                     'username_param': username,
-                     'result_count': len(found_users)})
-
         data = [UserListItem(user).data for user in found_users]
         return Response(data)
 
@@ -129,6 +123,8 @@ class UserProfileView(APIView):
         saved_data = dict(serializer.data)
         if saved_user_details:
             saved_data['user_details'] = [saved_user_details]
+
+        logger.info({'event': 'update_user_profile', 'username': user.username, 'data': saved_data})
         return Response(saved_data)
 
     @classmethod
@@ -187,4 +183,6 @@ class ChangePasswordView(APIView):
         old_password = request.POST.get('old_password', '')
         new_password = request.POST.get('new_password', '')
         request.user.change_password(old_password, new_password)
+
+        logger.info({'event': 'change_password', 'username': request.user.username})
         return Response({})
