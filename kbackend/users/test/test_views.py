@@ -119,7 +119,7 @@ class LoginTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertIsNotNone(response.cookies.get('sessionid'))
         response_data = json.loads(response.content)
-        self.assertEqual(1, response_data['id'])
+        self.assertTrue(isinstance(response_data['id'], int))
         self.assertEqual('Bobby Marley', response_data['display_name'])
         self.assertIsNotNone(response_data.get('csrftoken'))
 
@@ -199,7 +199,7 @@ class GetUserProfileTestCase(TestCase):
 
         UserDetails.objects.create(user=user, biography='This is my bio.')
 
-        response = self.client.get('/api/v1/users/profile/2/')
+        response = self.client.get(f'/api/v1/users/profile/{user.id}/')
 
         self.assertEqual(200, response.status_code)
         self.assertEqual('john.smith', response.data['username'])
@@ -220,7 +220,7 @@ class PatchUserProfileTestCase(TestCase):
     def test_success(self):
         self.client.force_login(self.user1)
 
-        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
 
         self.assertEqual(200, response.status_code)
         self.user1.refresh_from_db()
@@ -231,7 +231,7 @@ class PatchUserProfileTestCase(TestCase):
     def test_create_userdetails(self):
         self.client.force_login(self.user1)
 
-        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!", 'user_details': {'biography': 'My Bio'}}, content_type='application/json')
+        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!", 'user_details': {'biography': 'My Bio'}}, content_type='application/json')
 
         self.assertEqual(200, response.status_code)
         user_details = UserDetails.objects.get(user=self.user1)
@@ -241,7 +241,7 @@ class PatchUserProfileTestCase(TestCase):
         self.client.force_login(self.user1)
         user_details = UserDetails.objects.create(user=self.user1, biography='Original Bio')
 
-        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!", 'user_details': {'biography': 'My Bio'}}, content_type='application/json')
+        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!", 'user_details': {'biography': 'My Bio'}}, content_type='application/json')
 
         self.assertEqual(200, response.status_code)
         user_details.refresh_from_db()
@@ -250,12 +250,12 @@ class PatchUserProfileTestCase(TestCase):
     def test_with_different_user(self):
         self.client.force_login(self.user2)
 
-        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
 
         self.assertEqual(403, response.status_code)
 
     def test_not_logged_in(self):
-        response = self.client.patch('/api/v1/users/profile/1/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
 
         self.assertEqual(401, response.status_code)
 

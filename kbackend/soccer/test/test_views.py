@@ -41,4 +41,4 @@ class CreateMatchTestCase(ViewTestCase):
 
         self.assertEqual(201, response.status_code)
         response_data = json.loads(response.content)
-        self.assertEqual(1, response_data['id'])
+        self.assertTrue(isinstance(response_data['id'], int))
