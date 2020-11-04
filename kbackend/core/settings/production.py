@@ -48,7 +48,16 @@ MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-# TODO: use posgres
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'kbackend',
+        'USER': 'postgres',
+        'PASSWORD': os.environ['BACKEND_DB_PASSWORD'],
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
+}
 
 BASIC_TOKENS = os.environ['BASIC_TOKENS'].split(' ')
 
