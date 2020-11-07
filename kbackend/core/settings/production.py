@@ -48,13 +48,14 @@ MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
+DOCKER_HOST_IP = '172.17.0.1'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'kbackend',
         'USER': 'postgres',
         'PASSWORD': os.environ['BACKEND_DB_PASSWORD'],
-        'HOST': '127.0.0.1',
+        'HOST': DOCKER_HOST_IP,
         'PORT': '5432',
     }
 }

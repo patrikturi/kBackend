@@ -9,6 +9,7 @@ services:
       - /db:/kbackend/core/db
     ports:
       - "443:443"
+      - "8000:8000"
     restart: always
     env_file:
       - .env
