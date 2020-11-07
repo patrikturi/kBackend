@@ -3,7 +3,7 @@ import logging
 from unittest.mock import patch
 
 from django.contrib.auth import authenticate
-from django.test import TestCase
+from django.test import TestCase, override_settings, tag
 
 from users.models import User, UserDetails
 from users.test.testhelpers import ViewTestCase
@@ -109,12 +109,15 @@ class PasswordResetTestCase(TestCase):
 
 class LoginTestCase(TestCase):
 
-    def test_success(self):
+    def setUp(self):
+        super().setUp()
         username = 'bobby.marley'
-        password = 'Thepassword123'
-        User.objects.create_user(username, display_name='Bobby Marley', uuid=random_uuid(), password=password)
+        self.password = 'Thepassword123'
+        User.objects.create_user(username, display_name='Bobby Marley', uuid=random_uuid(), password=self.password)
 
-        response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': password})
+    def test_success(self):
+
+        response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': self.password})
 
         self.assertEqual(200, response.status_code)
         self.assertIsNotNone(response.cookies.get('sessionid'))
@@ -124,14 +127,31 @@ class LoginTestCase(TestCase):
         self.assertIsNotNone(response_data.get('csrftoken'))
 
     def test_with_wrong_password(self):
-        username = 'bobby.marley'
-        password = 'Thepassword123'
-        User.objects.create_user(username, uuid=random_uuid(), password=password)
-
-        response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': 'The-wrong-password'})
+        response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': 'wrong-password'})
 
         self.assertEqual(401, response.status_code)
         self.assertIsNone(response.cookies.get('sessionid'))
+
+    @tag('slow')
+    def test_ratelimited(self):
+        with override_settings(RATELIMIT_ENABLE=True):
+            for i in range(11):
+                self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': 'wrong-password'})
+
+            response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': self.password})
+            self.assertEqual(429, response.status_code)
+
+
+class AdminTestCase(TestCase):
+
+    @tag('slow')
+    def test_ratelimited(self):
+        with override_settings(RATELIMIT_ENABLE=True):
+            for i in range(11):
+                self.client.post('/adminsite/login/', {'username': 'admin', 'password': '1234'})
+
+            response = self.client.post('/adminsite/login/', {'username': 'admin', 'password': '1234'})
+            self.assertEqual(429, response.status_code)
 
 
 class UserSearchTestCase(TestCase):

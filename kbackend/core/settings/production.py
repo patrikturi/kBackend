@@ -71,3 +71,5 @@ CSRF_TRUSTED_ORIGINS = ['ksoccersl.com', 'kfrontend-staging.firebaseapp.com', 'l
 CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
 LANGUAGE_COOKIE_SAMESITE = 'None'
+
+RATELIMIT_ENABLE = True

@@ -3,6 +3,8 @@ import logging
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
+from ratelimit.core import is_ratelimited
+from ratelimit.exceptions import Ratelimited
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
@@ -47,12 +49,19 @@ class PasswordResetView(APIView):
 class LoginView(APIView):
 
     def post(self, request):
+        ratelimit_config = {'key': 'ip', 'rate': '10/30m', 'fn': self.post}
+
         if request.user.is_authenticated:
             return self._ok_response(request.user, request.META['CSRF_COOKIE'])
+        if is_ratelimited(request, **ratelimit_config, increment=False):
+            raise Ratelimited()
+
         username = input_to_username(request.POST.get('username'))
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
+
         if not user:
+            is_ratelimited(request, **ratelimit_config, increment=True)
             logger.info({'event': 'login_failed', 'username': username})
             raise AuthenticationFailed()
 

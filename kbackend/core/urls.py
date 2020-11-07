@@ -17,6 +17,10 @@ from django.contrib import admin
 from django.urls import path, include
 
 from . import views
+from core.decorators import login_wrapper
+
+admin.autodiscover()
+admin.site.login = login_wrapper(admin.site.login)
 
 
 urlpatterns = [

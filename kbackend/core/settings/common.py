@@ -134,3 +134,12 @@ DATABASES = {
 }
 
 LOGIN_URL = '/login'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'default',
+    }
+}
+
+RATELIMIT_ENABLE = False

@@ -3,3 +3,4 @@ djangorestframework~=3.11.1
 nanoid~=2.0.0
 sentry-sdk~=0.17.6
 django-cors-headers~=3.5.0
+django-ratelimit~=3.0.1
