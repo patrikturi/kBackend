@@ -2,19 +2,18 @@ import logging
 
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
 from ratelimit.core import is_ratelimited
 from ratelimit.exceptions import Ratelimited
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied, ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import nanoid
 
 from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User, UserDetails
 from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer, UserDetailsEditSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
-from users.auth_helpers import auth_required
 
 logger = logging.getLogger('users')
 
@@ -110,12 +109,16 @@ class PlayerMarketplaceView(APIView):
 
 class UserProfileView(APIView):
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
 
         return Response(UserProfileSerializer(user).data)
 
-    @method_decorator(auth_required)
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         if request.user.id != user_id and not request.user.is_superuser:
@@ -152,7 +155,8 @@ class UserProfileView(APIView):
 
 class PrivateUserProfileView(APIView):
 
-    @method_decorator(auth_required)
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = get_object_or_404(User, id=request.user.id)
 
@@ -187,7 +191,8 @@ class TestUsersView(APIView):
 
 class ChangePasswordView(APIView):
 
-    @method_decorator(auth_required)
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         old_password = request.POST.get('old_password', '')
         new_password = request.POST.get('new_password', '')
