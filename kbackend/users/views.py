@@ -10,8 +10,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import nanoid
 
-from users.auth_helpers import get_basic_auth_username, basic_auth_denied
 from users.models import User, UserDetails
+from core.basic_auth import ServerBasicAuthentication
 from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer, UserDetailsEditSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
 
@@ -20,12 +20,10 @@ logger = logging.getLogger('users')
 
 class PasswordResetView(APIView):
 
+    authentication_classes = [ServerBasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        auth_header = request.headers.get('Authorization')
-
-        if not get_basic_auth_username(auth_header):
-            return basic_auth_denied()
-
         new_password = nanoid.generate(size=20)
         display_name = normalize_display_name(request.data.get('username'))
         username = to_username(display_name)
@@ -165,23 +163,16 @@ class PrivateUserProfileView(APIView):
 
 class TestUsersView(APIView):
 
+    authentication_classes = [ServerBasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        auth_header = request.headers.get('Authorization')
-
-        if not get_basic_auth_username(auth_header):
-            return basic_auth_denied()
-
         test_users = get_test_users()
 
         data = [{'username': user.username} for user in test_users]
         return Response(data)
 
     def post(self, request):
-        auth_header = request.headers.get('Authorization')
-
-        if not get_basic_auth_username(auth_header):
-            return basic_auth_denied()
-
         username = f'test-{nanoid.generate(size=4)}'
 
         new_user = User.objects.create_user(username, display_name=username, is_test=True)

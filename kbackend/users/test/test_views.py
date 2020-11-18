@@ -1,6 +1,5 @@
 import json
 import logging
-from unittest.mock import patch
 
 from django.contrib.auth import authenticate
 from django.test import TestCase, override_settings, tag
@@ -11,61 +10,22 @@ from users.test.testhelpers import ViewTestCase
 logging.disable(logging.CRITICAL)
 
 
-class PasswordResetTestCase(TestCase):
+class PasswordResetTestCase(ViewTestCase):
 
     def setUp(self):
         super().setUp()
-        self.dummy_auth = 'basic some-token'
 
-    @patch('users.views.get_basic_auth_username')
-    def test_with_invalid_auth(self, get_basic_auth_username_mock):
-        get_basic_auth_username_mock.return_value = None
-
-        response = self.client.post('/api/v1/users/reset-password/')
-
-        self.assertEqual(401, response.status_code)
-
-    @patch('users.views.get_basic_auth_username')
-    def test_without_username(self, get_basic_auth_username_mock):
-        get_basic_auth_username_mock.return_value = 'script1'
-
-        response = self.client.post('/api/v1/users/reset-password/', {}, HTTP_AUTHORIZATION=self.dummy_auth)
-
-        self.assertEqual(400, response.status_code)
-
-    @patch('users.views.get_basic_auth_username')
-    def test_without_uuid(self, get_basic_auth_username_mock):
-        get_basic_auth_username_mock.return_value = 'script1'
-
-        response = self.client.post('/api/v1/users/reset-password/', {'username': 'JohN SmiTh'}, HTTP_AUTHORIZATION=self.dummy_auth)
-
-        self.assertEqual(400, response.status_code)
-
-    @patch('users.views.get_basic_auth_username')
-    def test_with_invalid_username(self, get_basic_auth_username_mock):
-        get_basic_auth_username_mock.return_value = 'script1'
-
-        response = self.client.post('/api/v1/users/reset-password/', {'username': 'JohN SmiTh The Great', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
-
-        self.assertEqual(400, response.status_code)
-
-    @patch('users.views.get_basic_auth_username')
-    def test_with_staff_user(self, get_basic_auth_username_mock):
+    def test_with_staff_user(self):
         User.objects.create_user('john.smith', password='existing-password', is_staff=True)
 
-        get_basic_auth_username_mock.return_value = 'script1'
-
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
 
         self.assertEqual(403, response.status_code)
 
-    @patch('users.views.get_basic_auth_username')
-    def test_with_nonexistent_user(self, get_basic_auth_username_mock):
-        get_basic_auth_username_mock.return_value = 'script1'
-
+    def test_with_nonexistent_user(self):
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)
@@ -75,12 +35,9 @@ class PasswordResetTestCase(TestCase):
         self.assertEqual('john@gmail.com', user.email)
         self.assertEqual('JohN SmiTh', user.display_name)
 
-    @patch('users.views.get_basic_auth_username')
-    def test_with_nonexistent_resident_user(self, get_basic_auth_username_mock):
-        get_basic_auth_username_mock.return_value = 'script1'
-
+    def test_with_nonexistent_resident_user(self):
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)
@@ -90,14 +47,11 @@ class PasswordResetTestCase(TestCase):
         self.assertEqual('john@gmail.com', user.email)
         self.assertEqual('John', user.display_name)
 
-    @patch('users.views.get_basic_auth_username')
-    def test_with_existing_user(self, get_basic_auth_username_mock):
+    def test_with_existing_user(self):
         User.objects.create_user('john.smith', password='existing-password')
 
-        get_basic_auth_username_mock.return_value = 'script1'
-
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.dummy_auth)
+                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)

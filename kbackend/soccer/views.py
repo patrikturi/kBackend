@@ -3,8 +3,9 @@ import logging
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
-from users.auth_helpers import get_basic_auth_username, basic_auth_denied
+from core.basic_auth import ServerBasicAuthentication
 from soccer.helpers import perform_create_stat, perform_create_match
 
 logger = logging.getLogger('soccer')
@@ -12,12 +13,10 @@ logger = logging.getLogger('soccer')
 
 class SoccerStatsView(APIView):
 
+    authentication_classes = [ServerBasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        auth_header = request.headers.get('Authorization')
-
-        if not get_basic_auth_username(auth_header):
-            return basic_auth_denied()
-
         created = perform_create_stat(request.data)
 
         logger.info({'event': 'create_stat', 'data': request.data})
@@ -28,12 +27,10 @@ class SoccerStatsView(APIView):
 
 class MatchesView(APIView):
 
+    authentication_classes = [ServerBasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        auth_header = request.headers.get('Authorization')
-
-        if not get_basic_auth_username(auth_header):
-            return basic_auth_denied()
-
         match = perform_create_match(request.data)
 
         logger.info({'event': 'create_match', 'data': request.data})
