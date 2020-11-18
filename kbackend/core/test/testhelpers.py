@@ -2,7 +2,7 @@ from django.test import TestCase
 from base64 import b64encode
 
 
-class ViewTestCase(TestCase):
+class BasicAuthTestCase(TestCase):
 
     def setUp(self):
         super().setUp()

@@ -5,12 +5,12 @@ from django.contrib.auth import authenticate
 from django.test import TestCase, override_settings, tag
 
 from users.models import User, UserDetails
-from users.test.testhelpers import ViewTestCase
+from core.test.testhelpers import BasicAuthTestCase
 
 logging.disable(logging.CRITICAL)
 
 
-class PasswordResetTestCase(ViewTestCase):
+class PasswordResetTestCase(BasicAuthTestCase):
 
     def setUp(self):
         super().setUp()
@@ -257,12 +257,7 @@ class GePrivatetUserProfileTestCase(TestCase):
         self.assertEqual(401, response.status_code)
 
 
-class CreateTestUserTestCase(ViewTestCase):
-
-    def test_invalid_auth(self):
-        response = self.client.post('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.invalid_auth)
-
-        self.assertEqual(401, response.status_code)
+class CreateTestUserTestCase(BasicAuthTestCase):
 
     def test_success(self):
         response = self.client.post('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.valid_auth)
@@ -272,12 +267,7 @@ class CreateTestUserTestCase(ViewTestCase):
         self.assertTrue('test' in response_data['username'])
 
 
-class GetTestUsersTestCase(ViewTestCase):
-
-    def test_invalid_auth(self):
-        response = self.client.get('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.invalid_auth)
-
-        self.assertEqual(401, response.status_code)
+class GetTestUsersTestCase(BasicAuthTestCase):
 
     def test_success(self):
         User.objects.create(username='test-1', is_test=True)

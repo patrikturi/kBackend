@@ -3,26 +3,21 @@ from base64 import b64encode
 from django.test import TestCase
 
 from core.basic_auth import decode_basic_token
+from core.test.testhelpers import BasicAuthTestCase
 
 
-class BasicAuthTestCase(TestCase):
+class BasicAuthTest(BasicAuthTestCase):
 
     def setUp(self):
         super().setUp()
 
     def test_with_invalid_password(self):
-        invalid_token = b64encode(b'debug:wrong-password').decode('ascii')
-        invalid_auth = f'basic {invalid_token}'
-
-        response = self.client.get('/test/basic-auth/', HTTP_AUTHORIZATION=invalid_auth)
+        response = self.client.get('/test/basic-auth/', HTTP_AUTHORIZATION=self.invalid_auth)
 
         self.assertEqual(401, response.status_code)
 
     def test_with_valid_password(self):
-        valid_token = b64encode(b'debug:token').decode('ascii')
-        valid_auth = f'basic {valid_token}'
-
-        response = self.client.get('/test/basic-auth/', HTTP_AUTHORIZATION=valid_auth)
+        response = self.client.get('/test/basic-auth/', HTTP_AUTHORIZATION=self.valid_auth)
 
         self.assertEqual(200, response.status_code)
 
