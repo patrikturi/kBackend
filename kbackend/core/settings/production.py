@@ -41,6 +41,7 @@ CSRF_COOKIE_SECURE = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+IS_TEST = False
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
