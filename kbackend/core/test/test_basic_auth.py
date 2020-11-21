@@ -1,12 +1,10 @@
 from base64 import b64encode
 
-from django.test import TestCase
-
 from core.basic_auth import decode_basic_token
-from core.test.testhelpers import BasicAuthTestCase
+from core.test.testhelpers import TestCase
 
 
-class BasicAuthTest(BasicAuthTestCase):
+class BasicAuthTest(TestCase):
 
     def setUp(self):
         super().setUp()

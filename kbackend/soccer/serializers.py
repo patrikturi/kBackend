@@ -9,6 +9,16 @@ class SoccerStatCreateSerializer(serializers.ModelSerializer):
         model = SoccerStat
         fields = ('user', 'stat_type', 'value', 'stat_uuid', 'match', 'side')
 
+    def get_or_create(self):
+        self.is_valid(raise_exception=True)
+        uuid = self.validated_data['stat_uuid']
+        stat = SoccerStat.objects.filter(stat_uuid=uuid).first()
+        if stat:
+            # Already exists
+            return stat, False
+
+        return self.save(), True
+
 
 class UsernamesField(serializers.ListField):
     username = serializers.CharField(max_length=63)

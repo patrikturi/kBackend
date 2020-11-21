@@ -1,10 +1,13 @@
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from rest_framework.exceptions import ValidationError, PermissionDenied, AuthenticationFailed
+from rest_framework.exceptions import ValidationError, PermissionDenied
+
+from soccer.models import SOCCER_STAT_TYPES
+
+SOCCER_STATS = [stat_type[0] for stat_type in SOCCER_STAT_TYPES]
 
 
 class User(AbstractUser):
@@ -75,18 +78,18 @@ class User(AbstractUser):
         return self.get_full_name()
 
     def add_stat(self, stat_type, value):
-        changed = False
+
+        if stat_type not in SOCCER_STATS:
+            raise KeyError(f'No such stat type: {stat_type}')
+
         if stat_type == 'goal':
             self.goals += value
-            changed = True
+            self.save()
         elif stat_type == 'assist':
             self.assists += value
-            changed = True
-        elif stat_type == 'kcoints':
+            self.save()
+        elif stat_type == 'kcoins':
             self.kcoins += value
-            changed = True
-
-        if changed:
             self.save()
 
     def change_password(self, old_password, new_password):
@@ -128,6 +131,9 @@ class User(AbstractUser):
     @classmethod
     def get_or_create(cls, provided_name):
         from users.helpers import to_username, normalize_display_name
+
+        if not provided_name:
+            raise ValidationError('Username was not provided')
 
         display_name = normalize_display_name(provided_name)
         username = to_username(display_name)

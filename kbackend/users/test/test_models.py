@@ -93,3 +93,34 @@ class ChangePasswordTestCase(TestCase):
 
         auth_user = authenticate(username='user1', password='orig-password')
         self.assertIsNotNone(auth_user)
+
+
+class AddStatTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.user = self.user = User.objects.create(username='user1')
+
+    def test_add_coints(self):
+        self.user.add_stat('kcoins', 2)
+
+        self.user.refresh_from_db()
+        self.assertEqual(2, self.user.kcoins)
+
+    def test_add_goal(self):
+        self.user.add_stat('goal', 1)
+
+        self.user.refresh_from_db()
+        self.assertEqual(1, self.user.goals)
+
+    def test_add_assist(self):
+        self.user.add_stat('assist', 1)
+
+        self.user.refresh_from_db()
+        self.assertEqual(1, self.user.assists)
+
+    def test_add_stat_not_cached(self):
+        self.user.add_stat('red', 1)
+
+    def test_not_existing_stat(self):
+        self.assertRaises(KeyError, lambda: self.user.add_stat('non-existent-stat', 1))

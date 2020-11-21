@@ -2,15 +2,15 @@ import json
 import logging
 
 from django.contrib.auth import authenticate
-from django.test import TestCase, override_settings, tag
+from django.test import override_settings, tag
 
+from core.test.testhelpers import TestCase
 from users.models import User, UserDetails
-from core.test.testhelpers import BasicAuthTestCase
 
 logging.disable(logging.CRITICAL)
 
 
-class PasswordResetTestCase(BasicAuthTestCase):
+class PasswordResetTestCase(TestCase):
 
     def setUp(self):
         super().setUp()
@@ -257,7 +257,7 @@ class GePrivatetUserProfileTestCase(TestCase):
         self.assertEqual(401, response.status_code)
 
 
-class CreateTestUserTestCase(BasicAuthTestCase):
+class CreateTestUserTestCase(TestCase):
 
     def test_success(self):
         response = self.client.post('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.valid_auth)
@@ -267,7 +267,7 @@ class CreateTestUserTestCase(BasicAuthTestCase):
         self.assertTrue('test' in response_data['username'])
 
 
-class GetTestUsersTestCase(BasicAuthTestCase):
+class GetTestUsersTestCase(TestCase):
 
     def test_success(self):
         User.objects.create(username='test-1', is_test=True)

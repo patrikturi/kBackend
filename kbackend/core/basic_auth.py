@@ -27,7 +27,7 @@ class ServerBasicAuthentication(authentication.BaseAuthentication):
 class BasicUser(AnonymousUser):
 
     def __init__(self, basic_username):
-        self.basic_username = basic_username
+        self.username = basic_username
 
     @property
     def is_authenticated(self):
