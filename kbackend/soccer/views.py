@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.basic_auth import ServerBasicAuthentication
 from users.models import User
 from soccer.models import MatchParticipation, Match
-from soccer.serializers import MatchCreateSerializer, SoccerStatCreateSerializer
+from soccer.serializers import MatchSerializer, MatchCreateSerializer, SoccerStatCreateSerializer
 
 logger = logging.getLogger('soccer')
 
@@ -38,7 +38,7 @@ class SoccerStatsView(APIView):
         logger.info({'event': 'create_stat', 'created': created, 'data': create_data, 'basic_user': basic_user.username})
 
         ret_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response({}, status=ret_status)
+        return Response(serializer.data, status=ret_status)
 
 
 class MatchesView(APIView):
@@ -67,6 +67,7 @@ class MatchesView(APIView):
 
         User.bulk_add_match(home_players + away_players)
 
-        logger.info({'event': 'create_match', 'data': data, 'basic_user': basic_user.username})
+        logger.info({'event': 'create_match', 'data': serializer.data, 'basic_user': basic_user.username})
 
-        return Response({'id': match.id}, status=status.HTTP_201_CREATED)
+        match_serializer = MatchSerializer(match)
+        return Response(match_serializer.data, status=status.HTTP_201_CREATED)

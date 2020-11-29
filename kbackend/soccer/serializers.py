@@ -40,3 +40,11 @@ class MatchCreateSerializer(serializers.ModelSerializer):
         if len(users_in_both_teams) > 0:
             raise serializers.ValidationError('Some players are present in both teams ({})'.format(', '.join(users_in_both_teams)))
         return data
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    competition = serializers.CharField(source='competition_name', required=False)
+
+    class Meta:
+        model = Match
+        fields = ('id', 'competition', 'home_team', 'away_team')

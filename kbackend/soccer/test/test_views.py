@@ -40,7 +40,7 @@ class CreateStatTestCase(TestCase):
         self.User_mock.get_or_create.return_value = self.user_mock
 
         self.serializer_class_mock = self.patch('soccer.views.SoccerStatCreateSerializer')
-        self.serializer_mock = Mock()
+        self.serializer_mock = Mock(data='dummy-data')
         self.serializer_class_mock.return_value = self.serializer_mock
 
         self.logger_mock = self.patch('soccer.views.logger')
@@ -51,6 +51,7 @@ class CreateStatTestCase(TestCase):
         response = self.view.create_stat(self.basic_user, {'username': 'some.user', 'stat_type': 'dummy_type', 'value': 1})
 
         self.assertEqual(201, response.status_code)
+        self.assertEqual('dummy-data', response.data)
         self.User_mock.get_or_create.assert_called_once_with('some.user')
         self.serializer_class_mock.assert_called_once_with(data={'user': 12, 'stat_type': 'dummy_type', 'value': 1})
         self.serializer_mock.get_or_create.assert_called_once()
@@ -97,6 +98,10 @@ class CreateMatchTest(TestCase):
         self.serializer_class_mock = self.patch('soccer.views.MatchCreateSerializer')
         self.serializer_class_mock.return_value = self.serializer_mock
 
+        self.match_serializer_class_mock = self.patch('soccer.views.MatchSerializer')
+        self.match_serializer_mock = Mock(data='dummy-data')
+        self.match_serializer_class_mock.return_value = self.match_serializer_mock
+
         self.match_mock = Mock()
         self.Match_mock = self.patch('soccer.views.Match')
         self.Match_mock.objects.create.return_value = self.match_mock
@@ -133,4 +138,7 @@ class CreateMatchTest(TestCase):
 
         self.logger_mock.info.assert_called_once()
 
+        self.match_serializer_class_mock.assert_called_once_with(self.match_mock)
+
         self.assertEqual(201, response.status_code)
+        self.assertEqual('dummy-data', response.data)
