@@ -6,9 +6,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from core.basic_auth import ServerBasicAuthentication
-from soccer.helpers import perform_create_match
 from users.models import User
-from soccer.serializers import SoccerStatCreateSerializer
+from soccer.models import MatchParticipation, Match
+from soccer.serializers import MatchCreateSerializer, SoccerStatCreateSerializer
 
 logger = logging.getLogger('soccer')
 
@@ -27,9 +27,9 @@ class SoccerStatsView(APIView):
         username = create_data.pop('username', None)
 
         user = User.get_or_create(username)
-        data['user'] = user.id
+        create_data['user'] = user.id
 
-        serializer = SoccerStatCreateSerializer(data=data)
+        serializer = SoccerStatCreateSerializer(data=create_data)
         stat, created = serializer.get_or_create()
 
         if created:
@@ -47,8 +47,26 @@ class MatchesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        match = perform_create_match(request.data)
+        return self.create_match(request.user, request.data)
 
-        logger.info({'event': 'create_match', 'data': request.data})
+    @classmethod
+    def create_match(cls, basic_user, data):
+        serializer = MatchCreateSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+
+        match = Match.objects.create(
+            competition_name=data.get('competition', ''),
+            home_team=data['home_team'],
+            away_team=data['away_team'])
+
+        home_players = User.bulk_get_or_create(data['home_players'])
+        away_players = User.bulk_get_or_create(data['away_players'])
+
+        MatchParticipation.objects.bulk_create_team(match, home_players, side='home')
+        MatchParticipation.objects.bulk_create_team(match, away_players, side='away')
+
+        User.bulk_add_match(home_players + away_players)
+
+        logger.info({'event': 'create_match', 'data': data, 'basic_user': basic_user.username})
 
         return Response({'id': match.id}, status=status.HTTP_201_CREATED)

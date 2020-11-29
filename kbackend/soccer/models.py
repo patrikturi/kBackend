@@ -29,7 +29,16 @@ class Match(models.Model):
         verbose_name_plural = 'Matches'
 
 
+class ParticipationManager(models.Manager):
+
+    def bulk_create_team(self, match, users, side):
+        participartions = [MatchParticipation(user=user, match=match, side=side) for user in users]
+        self.bulk_create(participartions)
+
+
 class MatchParticipation(models.Model):
+    objects = ParticipationManager()
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     match = models.ForeignKey(Match, null=True, on_delete=models.CASCADE)

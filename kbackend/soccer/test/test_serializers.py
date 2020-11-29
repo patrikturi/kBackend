@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.exceptions import ValidationError
 
-from soccer.serializers import SoccerStatCreateSerializer
+from soccer.serializers import SoccerStatCreateSerializer, MatchCreateSerializer
 
 from users.models import User
 from soccer.models import SoccerStat
@@ -37,3 +37,24 @@ class SoccerStatCreateSerializerTest(TestCase):
         invalid_data = {'user': self.user.id, 'stat_type': 'invalid', 'value': 1, 'stat_uuid': 'some-uuid'}
         serializer = SoccerStatCreateSerializer(data=invalid_data)
         self.assertRaises(ValidationError, lambda: serializer.get_or_create())
+
+
+class CreateMatchSerializerTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def test_success(self):
+        valid_data = {'competition': 'comp', 'home_team': 'a', 'away_team': 'b', 'home_players': ['user1', 'user2'], 'away_players': ['user3', 'user4']}
+        serializer = MatchCreateSerializer(data=valid_data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_user_in_both_teams(self):
+        invalid_data = {'competition': 'comp', 'home_team': 'a', 'away_team': 'b', 'home_players': ['user1', 'user2'], 'away_players': ['user2', 'user3']}
+        serializer = MatchCreateSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+
+    def test_away_players_missing(self):
+        invalid_data = {'competition': 'comp', 'home_team': 'a', 'away_team': 'b', 'home_players': ['user1', 'user2']}
+        serializer = MatchCreateSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
