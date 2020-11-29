@@ -24,11 +24,16 @@ class PasswordResetView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        return self.reset_password(request.data)
+
+    @classmethod
+    def reset_password(cls, data):
         new_password = nanoid.generate(size=20)
-        display_name = normalize_display_name(request.data.get('username'))
+        display_name = normalize_display_name(data.get('username'))
         username = to_username(display_name)
-        email = request.data.get('email', '')
-        uuid = request.data.get('uuid')
+        email = data.get('email', '')
+        uuid = data.get('uuid')
+
         try:
             user, is_created = User.reset_password(username, display_name, email, uuid, new_password)
         except ValidationError:

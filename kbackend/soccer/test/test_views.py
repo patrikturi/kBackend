@@ -133,4 +133,4 @@ class CreateMatchTest(TestCase):
 
         self.logger_mock.info.assert_called_once()
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)

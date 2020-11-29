@@ -1,27 +1,22 @@
 import json
 import logging
+from unittest.mock import Mock
 
 from django.contrib.auth import authenticate
 from django.test import override_settings, tag
+from rest_framework.exceptions import ValidationError
 
 from core.test.testhelpers import TestCase
 from users.models import User, UserDetails
+from users.views import PasswordResetView
 
 logging.disable(logging.CRITICAL)
 
 
-class PasswordResetTestCase(TestCase):
+class PasswordResetIntegrationTest(TestCase):
 
     def setUp(self):
         super().setUp()
-
-    def test_with_staff_user(self):
-        User.objects.create_user('john.smith', password='existing-password', is_staff=True)
-
-        response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
-
-        self.assertEqual(403, response.status_code)
 
     def test_with_nonexistent_user(self):
         response = self.client.post('/api/v1/users/reset-password/',
@@ -35,30 +30,51 @@ class PasswordResetTestCase(TestCase):
         self.assertEqual('john@gmail.com', user.email)
         self.assertEqual('JohN SmiTh', user.display_name)
 
-    def test_with_nonexistent_resident_user(self):
-        response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
+
+class PasswordResetTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.view = PasswordResetView
+        self.nanoid_mock = self.patch('users.views.nanoid')
+        self.User_mock = self.patch('users.views.User')
+        self.logger_mock = self.patch('users.views.logger')
+
+    def test_success(self):
+
+        self.nanoid_mock.generate.return_value = 'password'
+        self.User_mock.reset_password.return_value = Mock(), True
+
+        uuid = random_uuid()
+        response = self.view.reset_password({'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': uuid})
+
+        self.User_mock.reset_password.assert_called_once_with('john.smith', 'JohN SmiTh', 'john@gmail.com', uuid, 'password')
+
+        self.logger_mock.info.assert_called_once()
 
         self.assertEqual(200, response.status_code)
-        self.assertTrue('password' in response.data)
 
-        user = authenticate(username='john', password=response.data['password'])
-        self.assertIsNotNone(user)
-        self.assertEqual('john@gmail.com', user.email)
-        self.assertEqual('John', user.display_name)
+    def test_with_resident_user(self):
 
-    def test_with_existing_user(self):
-        User.objects.create_user('john.smith', password='existing-password')
+        self.nanoid_mock.generate.return_value = 'password'
+        self.User_mock.reset_password.return_value = Mock(), True
 
-        response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'JohN SmiTh', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
+        uuid = random_uuid()
+        response = self.view.reset_password({'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': uuid})
+
+        self.User_mock.reset_password.assert_called_once_with('john', 'John', 'john@gmail.com', uuid, 'password')
 
         self.assertEqual(200, response.status_code)
-        self.assertTrue('password' in response.data)
-        self.assertNotEqual('existing-password', response.data['password'])
 
-        user = authenticate(username='john.smith', password=response.data['password'])
-        self.assertIsNotNone(user)
+    def test_with_failed_password_reset(self):
+
+        self.nanoid_mock.generate.return_value = 'password'
+        self.User_mock.reset_password.side_effect = ValidationError
+
+        uuid = random_uuid()
+        self.assertRaises(ValidationError, lambda: self.view.reset_password({'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': uuid}))
+
+        self.logger_mock.info.assert_called_once()
 
 
 class LoginTestCase(TestCase):

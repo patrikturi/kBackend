@@ -11,6 +11,8 @@ class TestCase(DjangoTestCase):
     valid_auth = f'basic {_valid_token}'
     invalid_auth = f'basic {_invalid_token}'
 
+    dummy_uuid = '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'
+
     def using(self, context_manager):
         enter_value = context_manager.__enter__()
         self.addCleanup(context_manager.__exit__)

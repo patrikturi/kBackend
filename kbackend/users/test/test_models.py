@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from django.test import TestCase
+from core.test.testhelpers import TestCase
 from users.models import User
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
@@ -124,3 +124,25 @@ class AddStatTest(TestCase):
 
     def test_not_existing_stat(self):
         self.assertRaises(KeyError, lambda: self.user.add_stat('non-existent-stat', 1))
+
+
+class ResetPasswordTest(TestCase):
+
+    def test_with_nonexistent_user(self):
+        User.reset_password('john.smith', 'JohN SmiTh', 'john@gmail.com', self.dummy_uuid, 'some-password')
+
+        user = authenticate(username='john.smith', password='some-password')
+        self.assertIsNotNone(user)
+
+    def test_with_existing_user(self):
+        User.objects.create_user('john.smith', password='existing-password', is_staff=False)
+
+        User.reset_password('john.smith', 'JohN SmiTh', 'john@gmail.com', self.dummy_uuid, 'new-password')
+
+        user = authenticate(username='john.smith', password='new-password')
+        self.assertIsNotNone(user)
+
+    def test_with_staff_user(self):
+        User.objects.create_user('john.smith', password='existing-password', is_staff=True)
+
+        self.assertRaises(PermissionDenied, lambda: User.reset_password('john.smith', 'JohN SmiTh', 'john@gmail.com', self.dummy_uuid, 'new-password'))
