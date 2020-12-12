@@ -7,7 +7,7 @@ class SoccerStatCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SoccerStat
-        fields = ('user', 'stat_type', 'value', 'stat_uuid', 'match', 'side')
+        fields = ('id', 'user', 'stat_type', 'value', 'stat_uuid', 'match', 'side')
 
     def get_or_create(self):
         self.is_valid(raise_exception=True)
@@ -15,6 +15,7 @@ class SoccerStatCreateSerializer(serializers.ModelSerializer):
         stat = SoccerStat.objects.filter(stat_uuid=uuid).first()
         if stat:
             # Already exists
+            self.validated_data['id'] = stat.id
             return stat, False
 
         return self.save(), True

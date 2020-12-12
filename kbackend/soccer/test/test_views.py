@@ -1,144 +1,101 @@
 import json
-from unittest.mock import Mock, patch, DEFAULT, call
 
 from rest_framework.exceptions import ValidationError
 
 from core.test.testhelpers import TestCase
 from soccer.views import MatchesView, SoccerStatsView
+from soccer.models import Match, SoccerStat, MatchParticipation
 from users.models import User
 
 
-class CreateStatIntegrationTest(TestCase):
+class CreateStatTest(TestCase):
 
-    def test_success(self):
-        User.objects.create(username='user')
+    def setUp(self):
+        super().setUp()
+        self.user = User.objects.create(username='user')
+        self.view = SoccerStatsView
 
-        valid_data = {'username': 'user', 'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1}
+    def test_with_match(self):
+        match = Match.objects.create()
+
+        valid_data = {'username': 'user', 'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1, 'match': match.id}
         response = self.client.post('/api/v1/soccer/stats/', valid_data,
                                     HTTP_AUTHORIZATION=self.valid_auth, content_type='application/json')
 
         self.assertEqual(201, response.status_code)
 
+        stat = SoccerStat.objects.get(user=self.user)
+        self.assertTrue('id' in response.data)
+        self.assertAllEqual('someuuid', stat.stat_uuid, response.data['stat_uuid'])
+        self.assertAllEqual('goal', stat.stat_type, response.data['stat_type'])
+        self.assertAllEqual(1, stat.value, response.data['value'])
+        self.assertAllEqual(match.id, stat.match.id, response.data['match'])
 
-class CreateStatTestCase(TestCase):
-
-    def using(self, context_manager):
-        enter_value = context_manager.__enter__()
-        self.addCleanup(context_manager.__exit__)
-        return enter_value
-
-    def patch(self, target, new=DEFAULT, spec=None, create=False, mocksignature=False, spec_set=None, autospec=False, new_callable=None, **kwargs):
-        return self.using(patch(target=target, new=new, spec=spec, create=create, mocksignature=mocksignature, spec_set=spec_set, autospec=autospec, new_callable=new_callable, **kwargs))
-
-    def setUp(self):
-        super().setUp()
-        self.view = SoccerStatsView
-        self.basic_user = Mock(username='user')
-
-        self.user_mock = Mock(id=12)
-        self.User_mock = self.patch('soccer.views.User')
-        self.User_mock.get_or_create.return_value = self.user_mock
-
-        self.serializer_class_mock = self.patch('soccer.views.SoccerStatCreateSerializer')
-        self.serializer_mock = Mock(data='dummy-data')
-        self.serializer_class_mock.return_value = self.serializer_mock
-
-        self.logger_mock = self.patch('soccer.views.logger')
-
-    def test_success(self):
-        self.serializer_mock.get_or_create.return_value = Mock(), True
-
-        response = self.view.create_stat(self.basic_user, {'username': 'some.user', 'stat_type': 'dummy_type', 'value': 1})
-
-        self.assertEqual(201, response.status_code)
-        self.assertEqual('dummy-data', response.data)
-        self.User_mock.get_or_create.assert_called_once_with('some.user')
-        self.serializer_class_mock.assert_called_once_with(data={'user': 12, 'stat_type': 'dummy_type', 'value': 1})
-        self.serializer_mock.get_or_create.assert_called_once()
-        self.user_mock.add_stat.assert_called_once_with('dummy_type', 1)
-        self.logger_mock.info.assert_called_once()
+        self.user.refresh_from_db()
+        self.assertEqual(1, self.user.goals)
 
     def test_stat_already_exists(self):
-        self.serializer_mock.get_or_create.return_value = Mock(), False
+        SoccerStat.objects.create(user=self.user, stat_uuid='someuuid', stat_type='goal', value=1)
 
-        response = self.view.create_stat(self.basic_user, {'username': 'some.user', 'stat_type': 'dummy_type', 'value': 1})
+        valid_data = {'username': 'user', 'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1}
+        response = self.view.create_stat(self.basic_user, valid_data)
 
         self.assertEqual(200, response.status_code)
-        self.User_mock.get_or_create.assert_called_once_with('some.user')
-        self.serializer_mock.get_or_create.assert_called_once()
-        self.user_mock.add_stat.assert_not_called()
-        self.logger_mock.info.assert_called_once()
+
+        stat = SoccerStat.objects.get(user=self.user)
+        self.assertTrue('id' in response.data)
+        self.assertAllEqual('goal', stat.stat_type, response.data['stat_type'])
+
+        self.user.refresh_from_db()
+        self.assertEqual(0, self.user.goals)
 
     def test_username_not_provided(self):
-        self.User_mock.get_or_create.side_effect = ValidationError()
-
-        self.assertRaises(ValidationError, lambda: self.view.create_stat(self.basic_user, {'stat_type': 'dummy_type', 'value': 1}))
-
-
-class CreateMatchIntegrationTest(TestCase):
-
-    def test_success(self):
-        valid_data = {'home_team': 'Team A', 'away_team': 'Team B', 'home_players': ['userA', 'userB'], 'away_players': ['userC', 'userD']}
-        response = self.client.post('/api/v1/soccer/matches/', valid_data,
-                                    HTTP_AUTHORIZATION=self.valid_auth, content_type='application/json')
-
-        self.assertEqual(201, response.status_code)
-        response_data = json.loads(response.content)
-        self.assertTrue(isinstance(response_data['id'], int))
+        invalid_data = {'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1}
+        self.assertRaises(ValidationError, lambda: self.view.create_stat(self.basic_user, invalid_data))
 
 
 class CreateMatchTest(TestCase):
 
-    def setUp(self):
-        super().setUp()
-        self.view = MatchesView
-        self.basic_user = Mock(username='user')
-
-        self.serializer_mock = Mock()
-        self.serializer_class_mock = self.patch('soccer.views.MatchCreateSerializer')
-        self.serializer_class_mock.return_value = self.serializer_mock
-
-        self.match_serializer_class_mock = self.patch('soccer.views.MatchSerializer')
-        self.match_serializer_mock = Mock(data='dummy-data')
-        self.match_serializer_class_mock.return_value = self.match_serializer_mock
-
-        self.match_mock = Mock()
-        self.Match_mock = self.patch('soccer.views.Match')
-        self.Match_mock.objects.create.return_value = self.match_mock
-
-        self.users_list1 = [Mock(username='p1')]
-        self.users_list2 = [Mock(username='p2')]
-        self.User_mock = self.patch('soccer.views.User')
-        self.User_mock.bulk_get_or_create.side_effect = [self.users_list1, self.users_list2]
-
-        self.MatchParticipation_mock = self.patch('soccer.views.MatchParticipation')
-        self.logger_mock = self.patch('soccer.views.logger')
-
-    def test_success(self):
-        data = {'competition': 'c', 'home_team': 'teamA', 'away_team': 'teamB', 'home_players': ['p1'], 'away_players': ['p2']}
-
-        response = self.view.create_match(self.basic_user, data)
-
-        self.serializer_class_mock.assert_called_once_with(data=data)
-        self.serializer_mock.is_valid.assert_called_once_with(raise_exception=True)
-
-        self.Match_mock.objects.create.assert_called_once_with(competition_name='c', home_team='teamA', away_team='teamB')
-
-        self.User_mock.bulk_get_or_create.assert_has_calls([
-            call(['p1']),
-            call(['p2'])
-        ])
-
-        self.MatchParticipation_mock.objects.bulk_create_team.assert_has_calls([
-            call(self.match_mock, self.users_list1, side='home'),
-            call(self.match_mock, self.users_list2, side='away'),
-        ])
-
-        self.User_mock.bulk_add_match.assert_called_once_with(self.users_list1 + self.users_list2)
-
-        self.logger_mock.info.assert_called_once()
-
-        self.match_serializer_class_mock.assert_called_once_with(self.match_mock)
+    def test_with_competition(self):
+        valid_data = {
+            'home_team': 'Team A',
+            'away_team': 'Team B',
+            'home_players': ['userA', 'userB'],
+            'away_players': ['userC', 'userD'],
+            'competition': 'dummy-competition'
+        }
+        response = self.client.post('/api/v1/soccer/matches/', valid_data,
+                                    HTTP_AUTHORIZATION=self.valid_auth, content_type='application/json')
 
         self.assertEqual(201, response.status_code)
-        self.assertEqual('dummy-data', response.data)
+
+        response_data = json.loads(response.content)
+        self.assertTrue('id' in response_data)
+
+        match = Match.objects.filter(competition_name='dummy-competition').first()
+
+        self.assertEqual('dummy-competition', response_data['competition'])
+        self.assertAllEqual('Team A', match.home_team, response_data['home_team'])
+        self.assertAllEqual('Team B', match.away_team, response_data['away_team'])
+
+        home_participation = MatchParticipation.objects.filter(match=match, side='home')
+        self.assertEqual(2, len(home_participation))
+        away_participation = MatchParticipation.objects.filter(match=match, side='away')
+        self.assertEqual(2, len(away_participation))
+
+        created_users = User.objects.filter(username__in=['usera', 'userb', 'userc', 'userd'])
+        self.assertEqual(4, len(created_users))
+
+    def test_without_competition(self):
+        valid_data = {
+            'home_team': 'Team 1',
+            'away_team': 'Team 2',
+            'home_players': ['userA', 'userB'],
+            'away_players': ['userC', 'userD'],
+        }
+        response = MatchesView.create_match(self.basic_user, valid_data)
+
+        self.assertEqual(201, response.status_code)
+
+        match = Match.objects.filter(home_team='Team 1', away_team='Team 2').first()
+        self.assertIsNotNone(match)

@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError
 from soccer.serializers import SoccerStatCreateSerializer, MatchCreateSerializer
 
 from users.models import User
-from soccer.models import SoccerStat
+from soccer.models import Match, SoccerStat
 
 
 class SoccerStatCreateSerializerTest(TestCase):
@@ -12,7 +12,17 @@ class SoccerStatCreateSerializerTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='Joe')
 
-    def test_success(self):
+    def test_with_match(self):
+        match = Match.objects.create()
+        valid_data = {'user': self.user.id, 'stat_type': 'goal', 'value': 1, 'stat_uuid': 'some-uuid', 'match': match.id}
+        serializer = SoccerStatCreateSerializer(data=valid_data)
+        stat, created = serializer.get_or_create()
+
+        stat.refresh_from_db()
+        self.assertTrue(created)
+        self.assertEqual('some-uuid', stat.stat_uuid)
+
+    def test_without_match(self):
         valid_data = {'user': self.user.id, 'stat_type': 'kcoins', 'value': 1, 'stat_uuid': 'some-uuid'}
         serializer = SoccerStatCreateSerializer(data=valid_data)
         stat, created = serializer.get_or_create()
@@ -20,6 +30,7 @@ class SoccerStatCreateSerializerTest(TestCase):
         stat.refresh_from_db()
         self.assertTrue(created)
         self.assertEqual('some-uuid', stat.stat_uuid)
+        self.assertIsNone(stat.match)
 
     def test_with_existing_uuid(self):
         existing_uuid = 'test-uuid'
@@ -33,7 +44,7 @@ class SoccerStatCreateSerializerTest(TestCase):
         self.assertEqual(existing_stat.id, stat.id)
         self.assertEqual(existing_uuid, stat.stat_uuid)
 
-    def test_with_invalid_Data(self):
+    def test_with_invalid_data(self):
         invalid_data = {'user': self.user.id, 'stat_type': 'invalid', 'value': 1, 'stat_uuid': 'some-uuid'}
         serializer = SoccerStatCreateSerializer(data=invalid_data)
         self.assertRaises(ValidationError, lambda: serializer.get_or_create())

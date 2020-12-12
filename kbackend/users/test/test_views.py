@@ -1,5 +1,4 @@
 import json
-import logging
 from unittest.mock import Mock
 
 from django.contrib.auth import authenticate
@@ -9,8 +8,6 @@ from rest_framework.exceptions import ValidationError
 from core.test.testhelpers import TestCase
 from users.models import User, UserDetails
 from users.views import PasswordResetView
-
-logging.disable(logging.CRITICAL)
 
 
 class PasswordResetIntegrationTest(TestCase):

@@ -1,4 +1,5 @@
-from unittest.mock import patch, DEFAULT
+import logging
+from unittest.mock import Mock, patch, DEFAULT
 
 from django.test import TestCase as DjangoTestCase
 from base64 import b64encode
@@ -13,6 +14,11 @@ class TestCase(DjangoTestCase):
 
     dummy_uuid = '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'
 
+    def setUp(self):
+        super().setUp()
+        self.basic_user = Mock(username='basic_user')
+        logging.disable(logging.CRITICAL)
+
     def using(self, context_manager):
         enter_value = context_manager.__enter__()
         self.addCleanup(context_manager.__exit__)
@@ -20,3 +26,7 @@ class TestCase(DjangoTestCase):
 
     def patch(self, target, new=DEFAULT, spec=None, create=False, mocksignature=False, spec_set=None, autospec=False, new_callable=None, **kwargs):
         return self.using(patch(target=target, new=new, spec=spec, create=create, mocksignature=mocksignature, spec_set=spec_set, autospec=autospec, new_callable=new_callable, **kwargs))
+
+    def assertAllEqual(self, first, second, third, msg=None):
+        self.assertEqual(first, second, msg=msg)
+        self.assertEqual(first, third, msg=msg)
