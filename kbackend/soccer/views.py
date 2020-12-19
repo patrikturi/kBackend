@@ -19,10 +19,10 @@ class SoccerStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        return self.create_stat(request.user, request.data)
+        return self.create_stat(request.data)
 
     @classmethod
-    def create_stat(cls, basic_user, data):
+    def create_stat(cls, data):
         create_data = dict(data)
         username = create_data.pop('username', None)
 
@@ -35,7 +35,7 @@ class SoccerStatsView(APIView):
         if created:
             user.add_stat(data['stat_type'], data['value'])
 
-        logger.info({'event': 'create_stat', 'created': created, 'data': create_data, 'basic_user': basic_user.username})
+        logger.info({'event': 'create_stat', 'created': created, 'data': create_data})
 
         ret_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         return Response(serializer.data, status=ret_status)
@@ -47,10 +47,10 @@ class MatchesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        return self.create_match(request.user, request.data)
+        return self.create_match(request.data)
 
     @classmethod
-    def create_match(cls, basic_user, data):
+    def create_match(cls, data):
         serializer = MatchCreateSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
@@ -67,7 +67,7 @@ class MatchesView(APIView):
 
         User.bulk_add_match(home_players + away_players)
 
-        logger.info({'event': 'create_match', 'data': serializer.data, 'basic_user': basic_user.username})
+        logger.info({'event': 'create_match', 'data': serializer.data})
 
         match_serializer = MatchSerializer(match)
         return Response(match_serializer.data, status=status.HTTP_201_CREATED)

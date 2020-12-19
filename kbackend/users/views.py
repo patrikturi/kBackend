@@ -40,10 +40,14 @@ class PasswordResetView(APIView):
             logger.info({'event': 'password_reset_failed', 'username': username, 'uuid': uuid})
             raise
 
-        logger.info({'event': 'password_reset_success',
-                     'username': user.username,
-                     'uuid': user.uuid,
-                     'is_created': is_created})
+        logger.info(
+            {
+                'event': 'password_reset_success',
+                'username': user.username,
+                'uuid': user.uuid,
+                'is_created': is_created
+            }
+        )
 
         return Response({'password': new_password})
 

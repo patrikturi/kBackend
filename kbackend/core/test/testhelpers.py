@@ -16,7 +16,6 @@ class TestCase(DjangoTestCase):
 
     def setUp(self):
         super().setUp()
-        self.basic_user = Mock(username='basic_user')
         logging.disable(logging.CRITICAL)
 
     def using(self, context_manager):

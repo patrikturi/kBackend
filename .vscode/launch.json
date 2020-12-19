@@ -12,6 +12,7 @@
             "cwd": "${workspaceFolder}/kbackend",
             "console": "integratedTerminal",
             "args": ["test"],
+            "envFile": "${workspaceFolder}/.dummy",
         }
     ]
 }

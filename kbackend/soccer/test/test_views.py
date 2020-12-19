@@ -38,7 +38,7 @@ class CreateStatTest(TestCase):
         SoccerStat.objects.create(user=self.user, stat_uuid='someuuid', stat_type='goal', value=1)
 
         valid_data = {'username': 'user', 'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1}
-        response = self.view.create_stat(self.basic_user, valid_data)
+        response = self.view.create_stat(valid_data)
 
         self.assertEqual(200, response.status_code)
 
@@ -51,7 +51,7 @@ class CreateStatTest(TestCase):
 
     def test_username_not_provided(self):
         invalid_data = {'stat_uuid': 'someuuid', 'stat_type': 'goal', 'value': 1}
-        self.assertRaises(ValidationError, lambda: self.view.create_stat(self.basic_user, invalid_data))
+        self.assertRaises(ValidationError, lambda: self.view.create_stat(invalid_data))
 
 
 class CreateMatchTest(TestCase):
@@ -93,7 +93,7 @@ class CreateMatchTest(TestCase):
             'home_players': ['userA', 'userB'],
             'away_players': ['userC', 'userD'],
         }
-        response = MatchesView.create_match(self.basic_user, valid_data)
+        response = MatchesView.create_match(valid_data)
 
         self.assertEqual(201, response.status_code)
 
