@@ -101,11 +101,15 @@ class LogoutView(APIView):
 class UserSearchview(APIView):
 
     def get(self, request):
-        username = input_to_username(request.GET.get('username', ''))
+        return self.search(request.GET)
+
+    @classmethod
+    def search(cls, parameters):
+        username = input_to_username(parameters.get('username', ''))
         if len(username) < 3:
             raise ValidationError(f'Search term "{username}" is too short')
 
-        found_users = User.objects.filter(username__contains=username).all().order_by('username')[:100]
+        found_users = User.search_by_name(username)
 
         data = [UserListItem(user).data for user in found_users]
         return Response(data)
@@ -114,7 +118,7 @@ class UserSearchview(APIView):
 class PlayerMarketplaceView(APIView):
 
     def get(self, request):
-        found_users = User.objects.filter(available_for_transfer=True).all().order_by('username')[:100]
+        found_users = User.objects.filter(available_for_transfer=True).order_by('username')[:100]
 
         data = [UserListItem(user).data for user in found_users]
         return Response(data)

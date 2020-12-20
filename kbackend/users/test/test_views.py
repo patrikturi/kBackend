@@ -9,7 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from core.test.testhelpers import TestCase
 from users.models import User, UserDetails
-from users.views import PasswordResetView, LoginView, LogoutView
+from users.views import PasswordResetView, LoginView, LogoutView, UserSearchview
 
 
 class PasswordResetIntegrationTest(TestCase):
@@ -167,6 +167,10 @@ class LogoutTest(TestCase):
 
 class UserSearchTestCase(TestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.view = UserSearchview
+
     def test_success(self):
         User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
         User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
@@ -184,7 +188,7 @@ class UserSearchTestCase(TestCase):
         User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
         User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
 
-        response = self.client.get('/api/v1/users/search/?username=Bobby%20M')
+        response = self.view.search({'username': 'Bobby M'})
 
         self.assertEqual(200, response.status_code)
 
@@ -194,15 +198,16 @@ class UserSearchTestCase(TestCase):
     def test_with_no_results(self):
         User.objects.create_user('john.smith', uuid=random_uuid(), password='abcd')
 
-        response = self.client.get('/api/v1/users/search/?username=bob')
+        response = self.view.search({'username': 'bob'})
 
         self.assertEqual(200, response.status_code)
         self.assertEqual([], response.data)
 
     def test_with_too_short_username(self):
-        response = self.client.get('/api/v1/users/search/?username=b')
+        self.assertRaises(ValidationError, lambda: self.view.search({'username': 'b'}))
 
-        self.assertEqual(400, response.status_code)
+    def test_with_username_not_provided(self):
+        self.assertRaises(ValidationError, lambda: self.view.search({}))
 
 
 class PlayerMarketplaceTestCase(TestCase):
