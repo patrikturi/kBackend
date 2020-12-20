@@ -11,3 +11,8 @@ BASIC_TOKENS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Tests run a lot quicker with this password hasher
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+]

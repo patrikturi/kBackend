@@ -54,20 +54,26 @@ class PasswordResetView(APIView):
 
 class LoginView(APIView):
 
-    def post(self, request):
-        ratelimit_config = {'key': 'ip', 'rate': '10/30m', 'fn': self.post}
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ratelimit_config = {'key': 'ip', 'rate': '10/30m', 'fn': self.post}
 
-        if request.user.is_authenticated:
-            return self._ok_response(request.user, request.META['CSRF_COOKIE'])
-        if is_ratelimited(request, **ratelimit_config, increment=False):
+    def post(self, request):
+        return self.login(request, request.user, request.POST)
+
+    def login(self, request, user, data):
+
+        if user.is_authenticated:
+            return self._ok_response(user, request.META['CSRF_COOKIE'])
+        if is_ratelimited(request, **self.ratelimit_config, increment=False):
             raise Ratelimited()
 
-        username = input_to_username(request.POST.get('username'))
-        password = request.POST.get('password')
+        username = input_to_username(data.get('username'))
+        password = data.get('password')
         user = authenticate(request, username=username, password=password)
 
         if not user:
-            is_ratelimited(request, **ratelimit_config, increment=True)
+            is_ratelimited(request, **self.ratelimit_config, increment=True)
             logger.info({'event': 'login_failed', 'username': username})
             raise AuthenticationFailed()
 

@@ -2,12 +2,14 @@ import json
 from unittest.mock import Mock
 
 from django.contrib.auth import authenticate
-from django.test import override_settings, tag
-from rest_framework.exceptions import ValidationError
+from django.contrib.auth.models import AnonymousUser
+from django.test import override_settings
+from ratelimit.exceptions import Ratelimited
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from core.test.testhelpers import TestCase
 from users.models import User, UserDetails
-from users.views import PasswordResetView
+from users.views import PasswordResetView, LoginView
 
 
 class PasswordResetIntegrationTest(TestCase):
@@ -28,7 +30,7 @@ class PasswordResetIntegrationTest(TestCase):
         self.assertEqual('JohN SmiTh', user.display_name)
 
 
-class PasswordResetTestCase(TestCase):
+class PasswordResetTest(TestCase):
 
     def setUp(self):
         super().setUp()
@@ -74,7 +76,7 @@ class PasswordResetTestCase(TestCase):
         self.logger_mock.info.assert_called_once()
 
 
-class LoginTestCase(TestCase):
+class LoginIntegrationTest(TestCase):
 
     def setUp(self):
         super().setUp()
@@ -89,7 +91,7 @@ class LoginTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertIsNotNone(response.cookies.get('sessionid'))
         response_data = json.loads(response.content)
-        self.assertTrue(isinstance(response_data['id'], int))
+        self.assertTrue('id' in response_data)
         self.assertEqual('Bobby Marley', response_data['display_name'])
         self.assertIsNotNone(response_data.get('csrftoken'))
 
@@ -99,26 +101,33 @@ class LoginTestCase(TestCase):
         self.assertEqual(401, response.status_code)
         self.assertIsNone(response.cookies.get('sessionid'))
 
-    @tag('slow')
+
+class LoginTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.view = LoginView()
+        self.user = User.objects.create()
+
+        self.authenticate_mock = self.patch('users.views.authenticate')
+        self.request_mock = Mock(META={'CSRF_COOKIE': 'abcd', 'REMOTE_ADDR': '127.0.0.1'})
+        self.patch('users.views.login')
+
+    def test_success(self):
+        self.authenticate_mock.return_value = self.user
+
+        response = self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'})
+
+        self.assertEqual(200, response.status_code)
+
     def test_ratelimited(self):
         with override_settings(RATELIMIT_ENABLE=True):
+            self.authenticate_mock.return_value = None
             for i in range(11):
-                self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': 'wrong-password'})
+                self.assertRaises(AuthenticationFailed, lambda: self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'}))
 
-            response = self.client.post('/api/v1/users/login/', {'username': 'Bobby Marley', 'password': self.password})
-            self.assertEqual(429, response.status_code)
-
-
-class AdminTestCase(TestCase):
-
-    @tag('slow')
-    def test_ratelimited(self):
-        with override_settings(RATELIMIT_ENABLE=True):
-            for i in range(11):
-                self.client.post('/adminsite/login/', {'username': 'admin', 'password': '1234'})
-
-            response = self.client.post('/adminsite/login/', {'username': 'admin', 'password': '1234'})
-            self.assertEqual(429, response.status_code)
+            self.authenticate_mock.return_value = self.user
+            self.assertRaises(Ratelimited, lambda: self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'}))
 
 
 class UserSearchTestCase(TestCase):

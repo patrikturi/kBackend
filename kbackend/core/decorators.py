@@ -5,11 +5,13 @@ from rest_framework import status
 from core.helpers import log_ratelimit
 
 
+ratelimit_config = {'key': 'ip', 'rate': '10/30m'}
+
+
 def login_wrapper(login_func):
 
-    ratelimit_config = {'key': 'ip', 'rate': '10/30m', 'fn': login_wrapper}
-
     def admin_login(request, **kwargs):
+        ratelimit_config['fn'] = login_wrapper
 
         if is_ratelimited(request, **ratelimit_config, increment=False):
             username = request.POST.get('username')
