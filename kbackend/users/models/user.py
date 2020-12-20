@@ -166,6 +166,10 @@ class User(AbstractUser):
         return User.objects.filter(username__contains=username).order_by('username')[:100]
 
     @classmethod
+    def search_marketplace(cls):
+        return User.objects.filter(available_for_transfer=True).order_by('username')[:100]
+
+    @classmethod
     def _create_non_registered(cls, username, display_name):
         user = User.objects.create_user(username, display_name=display_name, is_active=False)
         user.set_unusable_password()
