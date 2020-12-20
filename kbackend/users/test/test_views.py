@@ -9,7 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 from core.test.testhelpers import TestCase
 from users.models import User, UserDetails
-from users.views import PasswordResetView, LoginView
+from users.views import PasswordResetView, LoginView, LogoutView
 
 
 class PasswordResetIntegrationTest(TestCase):
@@ -124,10 +124,45 @@ class LoginTest(TestCase):
         with override_settings(RATELIMIT_ENABLE=True):
             self.authenticate_mock.return_value = None
             for i in range(11):
-                self.assertRaises(AuthenticationFailed, lambda: self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'}))
+                self.assertRaises(
+                    AuthenticationFailed,
+                    lambda: self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'})
+                )
 
             self.authenticate_mock.return_value = self.user
-            self.assertRaises(Ratelimited, lambda: self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'}))
+            self.assertRaises(
+                Ratelimited,
+                lambda: self.view.login(self.request_mock, AnonymousUser(), {'username': 'Bobby Marley', 'password': 'dummy password'})
+            )
+
+
+class LogoutTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.view = LogoutView()
+        self.logout_mock = self.patch('users.views.logout')
+        self.logger_mock = self.patch('users.views.logger')
+
+    def test_success(self):
+        request_mock = Mock(user=Mock(is_authenticated=True))
+
+        response = self.view.get(request_mock)
+
+        self.logout_mock.assert_called_once_with(request_mock)
+        self.logger_mock.info.assert_called_once()
+
+        self.assertEqual(200, response.status_code)
+
+    def test_already_logged_out(self):
+        request_mock = Mock(user=Mock(is_authenticated=False))
+
+        response = self.view.get(request_mock)
+
+        self.logout_mock.assert_called_once()
+        self.logger_mock.info.assert_not_called()
+
+        self.assertEqual(200, response.status_code)
 
 
 class UserSearchTestCase(TestCase):
