@@ -26,7 +26,7 @@ class SoccerStatsView(APIView):
         create_data = dict(data)
         username = create_data.pop('username', None)
 
-        user = User.get_or_create(username)
+        user = User.objects.get_or_create(username)
         create_data['user'] = user.id
 
         serializer = SoccerStatCreateSerializer(data=create_data)
@@ -59,13 +59,13 @@ class MatchesView(APIView):
             home_team=data['home_team'],
             away_team=data['away_team'])
 
-        home_players = User.bulk_get_or_create(data['home_players'])
-        away_players = User.bulk_get_or_create(data['away_players'])
+        home_players = User.objects.bulk_get_or_create(data['home_players'])
+        away_players = User.objects.bulk_get_or_create(data['away_players'])
 
         MatchParticipation.objects.bulk_create_team(match, home_players, side='home')
         MatchParticipation.objects.bulk_create_team(match, away_players, side='away')
 
-        User.bulk_add_match(home_players + away_players)
+        User.objects.bulk_add_match(home_players + away_players)
 
         logger.info({'event': 'create_match', 'data': serializer.data})
 

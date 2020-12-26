@@ -1,7 +1,6 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.validators import RegexValidator
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
@@ -10,7 +9,80 @@ from soccer.models import SOCCER_STAT_TYPES
 SOCCER_STATS = [stat_type[0] for stat_type in SOCCER_STAT_TYPES]
 
 
+class CustomUserManager(UserManager):
+
+    def bulk_add_match(self, users):
+        user_ids = [user.id for user in users]
+        self.filter(id__in=user_ids).update(matches=models.F('matches') + 1)
+
+    def reset_password(self, username, display_name, email, uuid, password):
+        from users.serializers import PasswordResetSerializer
+
+        user = self.filter(username=username).first()
+
+        is_new = user is None
+        if user:
+            if user.is_staff:
+                raise PermissionDenied('Staff users are not allowed to reset password this way.')
+            if user.uuid and user.uuid != uuid:
+                raise ValidationError('uuid of the user does not match')
+            user.is_active = True
+            user.uuid = uuid
+            user.set_password(password)
+            user.save()
+        else:
+            serializer = PasswordResetSerializer(data={
+                'username': username, 'display_name': display_name, 'email': email, 'uuid': uuid, 'password': password})
+            serializer.is_valid(raise_exception=True)
+            user = self.create_user(**serializer.data)
+        return user, is_new
+
+    def get_or_create(self, provided_name):
+        from users.helpers import to_username, normalize_display_name
+
+        if not provided_name:
+            raise ValidationError('Username was not provided')
+
+        display_name = normalize_display_name(provided_name)
+        username = to_username(display_name)
+        user = self.filter(username=username).first()
+
+        if not user:
+            user = self._create_non_registered(username, display_name)
+        return user
+
+    def bulk_get_or_create(self, provided_names):
+        from users.helpers import to_username, normalize_display_name
+
+        display_names = [normalize_display_name(name) for name in provided_names]
+        name_pairs = [(to_username(name), name) for name in display_names]
+        usernames = [pair[0] for pair in name_pairs]
+
+        users = list(self.filter(username__in=usernames).all())
+        existing_usernames = {user.username for user in users}
+
+        missing_name_pairs = [pair for pair in name_pairs if pair[0] not in existing_usernames]
+
+        for username, display_name in missing_name_pairs:
+            new_user = self._create_non_registered(username, display_name)
+            users.append(new_user)
+        return users
+
+    def search_by_name(self, username):
+        return self.filter(username__contains=username).order_by('username')[:100]
+
+    def search_marketplace(self):
+        return self.filter(available_for_transfer=True).order_by('username')[:100]
+
+    def _create_non_registered(self, username, display_name):
+        user = self.create_user(username, display_name=display_name, is_active=False)
+        user.set_unusable_password()
+        user.save()
+        return user
+
+
 class User(AbstractUser):
+    objects = CustomUserManager()
 
     # http://wiki.secondlife.com/wiki/Category:LSL_Avatar/Name
     # http://wiki.secondlife.com/wiki/Limits
@@ -19,13 +91,13 @@ class User(AbstractUser):
     username_validator = RegexValidator(r'^[a-z0-9]+\.?[a-z0-9]+$')
 
     username = models.CharField(
-        _('username'),
+        'username',
         max_length=63,
         unique=True,
-        help_text=_('Required. 63 characters or fewer. Only lower case english alphabet and at most one dot is allowed.'),
+        help_text='Required. 63 characters or fewer. Only lower case english alphabet and at most one dot is allowed.',
         validators=[username_validator],
         error_messages={
-            'unique': _("A user with that username already exists."),
+            'unique': "A user with that username already exists.",
         },
     )
 
@@ -99,79 +171,3 @@ class User(AbstractUser):
             raise ValidationError('New password is too short')
         self.set_password(new_password)
         self.save()
-
-    @classmethod
-    def bulk_add_match(cls, users):
-        user_ids = [user.id for user in users]
-        User.objects.filter(id__in=user_ids).update(matches=models.F('matches') + 1)
-
-    @classmethod
-    def reset_password(cls, username, display_name, email, uuid, password):
-        from users.serializers import PasswordResetSerializer
-
-        user = User.objects.filter(username=username).first()
-
-        is_new = user is None
-        if user:
-            if user.is_staff:
-                raise PermissionDenied('Staff users are not allowed to reset password this way.')
-            if user.uuid and user.uuid != uuid:
-                raise ValidationError('uuid of the user does not match')
-            user.is_active = True
-            user.uuid = uuid
-            user.set_password(password)
-            user.save()
-        else:
-            serializer = PasswordResetSerializer(data={
-                'username': username, 'display_name': display_name, 'email': email, 'uuid': uuid, 'password': password})
-            serializer.is_valid(raise_exception=True)
-            user = User.objects.create_user(**serializer.data)
-        return user, is_new
-
-    @classmethod
-    def get_or_create(cls, provided_name):
-        from users.helpers import to_username, normalize_display_name
-
-        if not provided_name:
-            raise ValidationError('Username was not provided')
-
-        display_name = normalize_display_name(provided_name)
-        username = to_username(display_name)
-        user = User.objects.filter(username=username).first()
-
-        if not user:
-            user = cls._create_non_registered(username, display_name)
-        return user
-
-    @classmethod
-    def bulk_get_or_create(cls, provided_names):
-        from users.helpers import to_username, normalize_display_name
-
-        display_names = [normalize_display_name(name) for name in provided_names]
-        name_pairs = [(to_username(name), name) for name in display_names]
-        usernames = [pair[0] for pair in name_pairs]
-
-        users = list(User.objects.filter(username__in=usernames).all())
-        existing_usernames = {user.username for user in users}
-
-        missing_name_pairs = [pair for pair in name_pairs if pair[0] not in existing_usernames]
-
-        for username, display_name in missing_name_pairs:
-            new_user = cls._create_non_registered(username, display_name)
-            users.append(new_user)
-        return users
-
-    @classmethod
-    def search_by_name(cls, username):
-        return User.objects.filter(username__contains=username).order_by('username')[:100]
-
-    @classmethod
-    def search_marketplace(cls):
-        return User.objects.filter(available_for_transfer=True).order_by('username')[:100]
-
-    @classmethod
-    def _create_non_registered(cls, username, display_name):
-        user = User.objects.create_user(username, display_name=display_name, is_active=False)
-        user.set_unusable_password()
-        user.save()
-        return user

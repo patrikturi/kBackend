@@ -42,12 +42,12 @@ class PasswordResetTest(TestCase):
     def test_success(self):
 
         self.nanoid_mock.generate.return_value = 'password'
-        self.User_mock.reset_password.return_value = Mock(), True
+        self.User_mock.objects.reset_password.return_value = Mock(), True
 
         uuid = self.dummy_uuid
         response = self.view.reset_password({'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': uuid})
 
-        self.User_mock.reset_password.assert_called_once_with('john.smith', 'JohN SmiTh', 'john@gmail.com', uuid, 'password')
+        self.User_mock.objects.reset_password.assert_called_once_with('john.smith', 'JohN SmiTh', 'john@gmail.com', uuid, 'password')
 
         self.logger_mock.info.assert_called_once()
 
@@ -56,19 +56,19 @@ class PasswordResetTest(TestCase):
     def test_with_resident_user(self):
 
         self.nanoid_mock.generate.return_value = 'password'
-        self.User_mock.reset_password.return_value = Mock(), True
+        self.User_mock.objects.reset_password.return_value = Mock(), True
 
         uuid = self.dummy_uuid
         response = self.view.reset_password({'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': uuid})
 
-        self.User_mock.reset_password.assert_called_once_with('john', 'John', 'john@gmail.com', uuid, 'password')
+        self.User_mock.objects.reset_password.assert_called_once_with('john', 'John', 'john@gmail.com', uuid, 'password')
 
         self.assertEqual(200, response.status_code)
 
     def test_with_failed_password_reset(self):
 
         self.nanoid_mock.generate.return_value = 'password'
-        self.User_mock.reset_password.side_effect = ValidationError
+        self.User_mock.objects.reset_password.side_effect = ValidationError
 
         uuid = self.dummy_uuid
         self.assertRaises(ValidationError, lambda: self.view.reset_password({'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': uuid}))
@@ -165,7 +165,7 @@ class LogoutTest(TestCase):
         self.assertEqual(200, response.status_code)
 
 
-class UserSearchTestCase(TestCase):
+class UserSearchTest(TestCase):
 
     def setUp(self):
         super().setUp()
@@ -210,7 +210,7 @@ class UserSearchTestCase(TestCase):
         self.assertRaises(ValidationError, lambda: self.view.search({}))
 
 
-class PlayerMarketplaceTestCase(TestCase):
+class PlayerMarketplaceTest(TestCase):
 
     def test_success(self):
         User.objects.create_user('bobby.marley', available_for_transfer=False, uuid=self.dummy_uuid, password='abcd')
@@ -226,7 +226,7 @@ class PlayerMarketplaceTestCase(TestCase):
         self.assertEqual(set(['john.smith', 'newplayer']), set(usernames))
 
 
-class GetUserProfileTestCase(TestCase):
+class GetUserProfileTest(TestCase):
 
     def test_success(self):
         User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
@@ -247,7 +247,7 @@ class GetUserProfileTestCase(TestCase):
         self.assertEqual(404, response.status_code)
 
 
-class PatchUserProfileTestCase(TestCase):
+class PatchUserProfileTest(TestCase):
     def setUp(self):
         super().setUp()
         self.user1 = User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
@@ -302,7 +302,7 @@ class PatchUserProfileTestCase(TestCase):
         self.assertEqual(403, response.status_code)
 
 
-class GePrivatetUserProfileTestCase(TestCase):
+class GePrivatetUserProfileTest(TestCase):
 
     def test_success(self):
         User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
@@ -320,7 +320,7 @@ class GePrivatetUserProfileTestCase(TestCase):
         self.assertEqual('This is my bio.', response.data['user_details'][0]['biography'])
 
 
-class CreateTestUserTestCase(TestCase):
+class CreateTestUserTest(TestCase):
 
     def test_success(self):
         response = self.client.post('/api/v1/users/test-users/', HTTP_AUTHORIZATION=self.valid_auth)
@@ -330,7 +330,7 @@ class CreateTestUserTestCase(TestCase):
         self.assertTrue('test' in response_data['username'])
 
 
-class GetTestUsersTestCase(TestCase):
+class GetTestUsersTest(TestCase):
 
     def test_success(self):
         User.objects.create(username='test-1', is_test=True)
@@ -342,7 +342,7 @@ class GetTestUsersTestCase(TestCase):
         self.assertEqual('test-1', response_data[0]['username'])
 
 
-class ChangePasswordTestCase(TestCase):
+class ChangePasswordTest(TestCase):
 
     def test_success(self):
         user = User.objects.create_user('bobby', uuid=self.dummy_uuid, password='old-password')

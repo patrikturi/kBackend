@@ -10,9 +10,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import nanoid
 
-from users.models import User, UserDetails
+from users.models import User
 from core.basic_auth import ServerBasicAuthentication
-from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer, UserDetailsEditSerializer
+from users.serializers import UserListItem, UserProfileSerializer, UserProfileEditSerializer, LoginSerializer, PrivateUserProfileSerializer
 from users.helpers import get_test_users, normalize_display_name, to_username, input_to_username
 
 logger = logging.getLogger('users')
@@ -35,7 +35,7 @@ class PasswordResetView(APIView):
         uuid = data.get('uuid')
 
         try:
-            user, is_created = User.reset_password(username, display_name, email, uuid, new_password)
+            user, is_created = User.objects.reset_password(username, display_name, email, uuid, new_password)
         except ValidationError:
             logger.info({'event': 'password_reset_failed', 'username': username, 'uuid': uuid})
             raise
@@ -78,7 +78,6 @@ class LoginView(APIView):
             raise AuthenticationFailed()
 
         login(request, user)
-
         logger.info({'event': 'login_success', 'username': user.username})
 
         return self._ok_response(user, request.META['CSRF_COOKIE'])
@@ -109,7 +108,7 @@ class UserSearchview(APIView):
         if len(username) < 3:
             raise ValidationError(f'Search term "{username}" is too short')
 
-        found_users = User.search_by_name(username)
+        found_users = User.objects.search_by_name(username)
 
         data = UserListItem(found_users, many=True).data
         return Response(data)
@@ -118,7 +117,7 @@ class UserSearchview(APIView):
 class PlayerMarketplaceView(APIView):
 
     def get(self, request):
-        found_users = User.search_marketplace()
+        found_users = User.objects.search_marketplace()
 
         data = UserListItem(found_users, many=True).data
         return Response(data)
