@@ -264,6 +264,11 @@ class PatchUserProfileTestCase(TestCase):
         response_data = json.loads(response.content)
         self.assertEqual("Hi, I'm Bob!", response_data['introduction'])
 
+    def test_not_logged_in(self):
+        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
+
+        self.assertEqual(401, response.status_code)
+
     def test_create_userdetails(self):
         self.client.force_login(self.user1)
 
@@ -272,6 +277,9 @@ class PatchUserProfileTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         user_details = UserDetails.objects.get(user=self.user1)
         self.assertEqual('My Bio', user_details.biography)
+
+        response_data = json.loads(response.content)
+        self.assertEqual('My Bio', response_data['user_details']['biography'])
 
     def test_update_userdetails(self):
         self.client.force_login(self.user1)
@@ -283,17 +291,15 @@ class PatchUserProfileTestCase(TestCase):
         user_details.refresh_from_db()
         self.assertEqual('My Bio', user_details.biography)
 
+        response_data = json.loads(response.content)
+        self.assertEqual('My Bio', response_data['user_details']['biography'])
+
     def test_with_different_user(self):
         self.client.force_login(self.user2)
 
         response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
 
         self.assertEqual(403, response.status_code)
-
-    def test_not_logged_in(self):
-        response = self.client.patch(f'/api/v1/users/profile/{self.user1.id}/', {'introduction': "Hi, I'm Bob!"}, content_type='application/json')
-
-        self.assertEqual(401, response.status_code)
 
 
 class GePrivatetUserProfileTestCase(TestCase):

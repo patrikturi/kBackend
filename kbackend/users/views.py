@@ -141,33 +141,12 @@ class UserProfileView(APIView):
         if request.user.id != user_id and not request.user.is_superuser:
             raise PermissionDenied()
 
-        patch_data = {key: value for key, value in request.data.items() if key != 'user_details'}
-        saved_user_details = None
-        if 'user_details' in request.data:
-            saved_user_details = self.update_user_details(user, request.data['user_details'])
-
-        serializer = UserProfileEditSerializer(user, patch_data, partial=True)
+        serializer = UserProfileEditSerializer(user, request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        saved_data = dict(serializer.data)
-        if saved_user_details:
-            saved_data['user_details'] = [saved_user_details]
 
-        logger.info({'event': 'update_user_profile', 'username': user.username, 'data': saved_data})
-        return Response(saved_data)
-
-    @classmethod
-    def update_user_details(cls, user, data):
-        instance = UserDetails.objects.filter(user=user).first()
-        if instance is None:
-            data['user'] = user.id
-            is_partial = False
-        else:
-            is_partial = True
-        serializer = UserDetailsEditSerializer(instance, data, partial=is_partial)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return serializer.data
+        logger.info({'event': 'update_user_profile', 'username': user.username, 'data': request.data})
+        return Response(serializer.data)
 
 
 class PrivateUserProfileView(APIView):
