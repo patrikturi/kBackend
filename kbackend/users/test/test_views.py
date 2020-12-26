@@ -19,7 +19,7 @@ class PasswordResetIntegrationTest(TestCase):
 
     def test_with_nonexistent_user(self):
         response = self.client.post('/api/v1/users/reset-password/',
-                                    {'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': random_uuid()}, HTTP_AUTHORIZATION=self.valid_auth)
+                                    {'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': self.dummy_uuid}, HTTP_AUTHORIZATION=self.valid_auth)
 
         self.assertEqual(200, response.status_code)
         self.assertTrue('password' in response.data)
@@ -44,7 +44,7 @@ class PasswordResetTest(TestCase):
         self.nanoid_mock.generate.return_value = 'password'
         self.User_mock.reset_password.return_value = Mock(), True
 
-        uuid = random_uuid()
+        uuid = self.dummy_uuid
         response = self.view.reset_password({'username': 'JohN SmiTh', 'email': 'john@gmail.com', 'uuid': uuid})
 
         self.User_mock.reset_password.assert_called_once_with('john.smith', 'JohN SmiTh', 'john@gmail.com', uuid, 'password')
@@ -58,7 +58,7 @@ class PasswordResetTest(TestCase):
         self.nanoid_mock.generate.return_value = 'password'
         self.User_mock.reset_password.return_value = Mock(), True
 
-        uuid = random_uuid()
+        uuid = self.dummy_uuid
         response = self.view.reset_password({'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': uuid})
 
         self.User_mock.reset_password.assert_called_once_with('john', 'John', 'john@gmail.com', uuid, 'password')
@@ -70,7 +70,7 @@ class PasswordResetTest(TestCase):
         self.nanoid_mock.generate.return_value = 'password'
         self.User_mock.reset_password.side_effect = ValidationError
 
-        uuid = random_uuid()
+        uuid = self.dummy_uuid
         self.assertRaises(ValidationError, lambda: self.view.reset_password({'username': 'John Resident', 'email': 'john@gmail.com', 'uuid': uuid}))
 
         self.logger_mock.info.assert_called_once()
@@ -82,7 +82,7 @@ class LoginIntegrationTest(TestCase):
         super().setUp()
         username = 'bobby.marley'
         self.password = 'Thepassword123'
-        User.objects.create_user(username, display_name='Bobby Marley', uuid=random_uuid(), password=self.password)
+        User.objects.create_user(username, display_name='Bobby Marley', uuid=self.dummy_uuid, password=self.password)
 
     def test_success(self):
 
@@ -172,9 +172,9 @@ class UserSearchTestCase(TestCase):
         self.view = UserSearchview
 
     def test_success(self):
-        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
-        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
-        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
+        User.objects.create_user('john.smith', uuid=self.dummy_uuid, password='abcdef')
+        User.objects.create_user('big.bobman', uuid=self.dummy_uuid, password='abcdef')
 
         response = self.client.get('/api/v1/users/search/?username=bob')
 
@@ -184,9 +184,9 @@ class UserSearchTestCase(TestCase):
         self.assertEqual(set(['bobby.marley', 'big.bobman']), set(usernames))
 
     def test_with_full_name(self):
-        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
-        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
-        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
+        User.objects.create_user('john.smith', uuid=self.dummy_uuid, password='abcdef')
+        User.objects.create_user('big.bobman', uuid=self.dummy_uuid, password='abcdef')
 
         response = self.view.search({'username': 'Bobby M'})
 
@@ -196,7 +196,7 @@ class UserSearchTestCase(TestCase):
         self.assertEqual(['bobby.marley'], usernames)
 
     def test_with_no_results(self):
-        User.objects.create_user('john.smith', uuid=random_uuid(), password='abcd')
+        User.objects.create_user('john.smith', uuid=self.dummy_uuid, password='abcd')
 
         response = self.view.search({'username': 'bob'})
 
@@ -213,10 +213,10 @@ class UserSearchTestCase(TestCase):
 class PlayerMarketplaceTestCase(TestCase):
 
     def test_success(self):
-        User.objects.create_user('bobby.marley', available_for_transfer=False, uuid=random_uuid(), password='abcd')
-        User.objects.create_user('john.smith', available_for_transfer=True, uuid=random_uuid(), password='abcdef')
-        User.objects.create_user('big.bobman', available_for_transfer=False, uuid=random_uuid(), password='abcdef')
-        User.objects.create_user('newplayer', available_for_transfer=True, uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('bobby.marley', available_for_transfer=False, uuid=self.dummy_uuid, password='abcd')
+        User.objects.create_user('john.smith', available_for_transfer=True, uuid=self.dummy_uuid, password='abcdef')
+        User.objects.create_user('big.bobman', available_for_transfer=False, uuid=self.dummy_uuid, password='abcdef')
+        User.objects.create_user('newplayer', available_for_transfer=True, uuid=self.dummy_uuid, password='abcdef')
 
         response = self.client.get('/api/v1/users/marketplace/')
 
@@ -229,9 +229,9 @@ class PlayerMarketplaceTestCase(TestCase):
 class GetUserProfileTestCase(TestCase):
 
     def test_success(self):
-        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
-        user = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
-        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
+        user = User.objects.create_user('john.smith', uuid=self.dummy_uuid, password='abcdef')
+        User.objects.create_user('big.bobman', uuid=self.dummy_uuid, password='abcdef')
 
         UserDetails.objects.create(user=user, biography='This is my bio.')
 
@@ -250,8 +250,8 @@ class GetUserProfileTestCase(TestCase):
 class PatchUserProfileTestCase(TestCase):
     def setUp(self):
         super().setUp()
-        self.user1 = User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
-        self.user2 = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
+        self.user1 = User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
+        self.user2 = User.objects.create_user('john.smith', uuid=self.dummy_uuid, password='abcdef')
 
     def test_success(self):
         self.client.force_login(self.user1)
@@ -305,9 +305,9 @@ class PatchUserProfileTestCase(TestCase):
 class GePrivatetUserProfileTestCase(TestCase):
 
     def test_success(self):
-        User.objects.create_user('bobby.marley', uuid=random_uuid(), password='abcd')
-        user = User.objects.create_user('john.smith', uuid=random_uuid(), password='abcdef')
-        User.objects.create_user('big.bobman', uuid=random_uuid(), password='abcdef')
+        User.objects.create_user('bobby.marley', uuid=self.dummy_uuid, password='abcd')
+        user = User.objects.create_user('john.smith', uuid=self.dummy_uuid, password='abcdef')
+        User.objects.create_user('big.bobman', uuid=self.dummy_uuid, password='abcdef')
 
         UserDetails.objects.create(user=user, biography='This is my bio.')
 
@@ -318,11 +318,6 @@ class GePrivatetUserProfileTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('john.smith', response.data['username'])
         self.assertEqual('This is my bio.', response.data['user_details'][0]['biography'])
-
-    def test_not_logged_in(self):
-        response = self.client.get('/api/v1/users/me/profile/')
-
-        self.assertEqual(401, response.status_code)
 
 
 class CreateTestUserTestCase(TestCase):
@@ -347,5 +342,24 @@ class GetTestUsersTestCase(TestCase):
         self.assertEqual('test-1', response_data[0]['username'])
 
 
-def random_uuid():
-    return '2e81fb58-f191-4c0e-aaa9-a41c92f689fa'
+class ChangePasswordTestCase(TestCase):
+
+    def test_success(self):
+        user = User.objects.create_user('bobby', uuid=self.dummy_uuid, password='old-password')
+        self.client.force_login(user)
+
+        response = self.client.post('/api/v1/users/change-password/', {'old_password': 'old-password', 'new_password': 'new-password'})
+
+        self.assertEqual(200, response.status_code)
+        self.client.logout()
+        self.assertTrue(self.client.login(username='bobby', password='new-password'))
+
+    def test_wrong_password(self):
+        user = User.objects.create_user('bobby', uuid=self.dummy_uuid, password='old-password')
+        self.client.force_login(user)
+
+        response = self.client.post('/api/v1/users/change-password/', {'old_password': 'wrong-password', 'new_password': 'new-password'})
+
+        self.assertEqual(403, response.status_code)
+        self.client.logout()
+        self.assertFalse(self.client.login(username='bobby', password='new-password'))
